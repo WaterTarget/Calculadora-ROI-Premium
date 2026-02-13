@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Calculadora ROI Premium | Suma de Modelos</title>
+    <title>Calculadora ROI Premium | AGRANEL</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -347,7 +347,7 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.5rem;
-            height: 320px;
+            height: 350px;
         }
         .chart-title {
             font-size: 0.95rem;
@@ -373,6 +373,15 @@
             width: 12px;
             height: 12px;
             border-radius: 3px;
+        }
+        /* Cash Flow Chart Specific */
+        .cash-flow-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: 400px;
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
@@ -462,6 +471,12 @@
                     </table>
                 </div>
 
+                <!-- Cash Flow Chart (NEW) -->
+                <div class="cash-flow-container">
+                    <div class="chart-title">Flujo de Efectivo Acumulado (24 Meses) - Proyección de Retorno</div>
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
+
                 <!-- Charts -->
                 <div class="charts-grid">
                     <div class="chart-container">
@@ -510,7 +525,7 @@
         };
 
         let models = [];
-        let profitChart, paybackChart;
+        let profitChart, paybackChart, cashFlowChart;
 
         // Formatting
         const fmtMoney = (n) => {
@@ -702,9 +717,8 @@
 
         // Initialize charts
         function initCharts() {
+            // Profit Chart
             const ctx1 = document.getElementById('profitChart').getContext('2d');
-            const ctx2 = document.getElementById('paybackChart').getContext('2d');
-
             profitChart = new Chart(ctx1, {
                 type: 'bar',
                 data: { labels: [], datasets: [] },
@@ -731,6 +745,8 @@
                 }
             });
 
+            // Payback Chart
+            const ctx2 = document.getElementById('paybackChart').getContext('2d');
             paybackChart = new Chart(ctx2, {
                 type: 'bar',
                 data: { labels: [], datasets: [] },
@@ -756,12 +772,79 @@
                     }
                 }
             });
+
+            // Cash Flow Chart (Line chart)
+            const ctx3 = document.getElementById('cashFlowChart').getContext('2d');
+            cashFlowChart = new Chart(ctx3, {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#9ca3af',
+                                usePointStyle: true,
+                                boxWidth: 10
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#9ca3af',
+                            borderColor: '#374151',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + fmtMoney(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: (v) => '$' + (v/1000).toFixed(0) + 'k'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            title: {
+                                display: true,
+                                text: 'Flujo Acumulado',
+                                color: '#9ca3af'
+                            }
+                        },
+                        x: {
+                            ticks: { 
+                                color: '#9ca3af',
+                                maxRotation: 45
+                            },
+                            grid: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Meses',
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // Update charts
         function updateCharts(results) {
             const labels = models.map((m, i) => `Modelo ${i+1}`);
             
+            // Update profit chart
             profitChart.data = {
                 labels: labels,
                 datasets: [{
@@ -772,6 +855,7 @@
             };
             profitChart.update();
 
+            // Update payback chart
             paybackChart.data = {
                 labels: labels,
                 datasets: [{
@@ -781,6 +865,43 @@
                 }]
             };
             paybackChart.update();
+
+            // Update cash flow chart (24 months projection)
+            const monthLabels = Array.from({length: 24}, (_, i) => `Mes ${i+1}`);
+            const cashFlowDatasets = results.map((r, i) => {
+                const data = [];
+                let accumulated = -r.inv; // Start with negative investment
+                for (let month = 1; month <= 24; month++) {
+                    accumulated += r.profit;
+                    data.push(accumulated);
+                }
+                return {
+                    label: `M${i+1}: ${MACHINES[models[i].machineId].name}`,
+                    data: data,
+                    borderColor: COLORS[i],
+                    backgroundColor: COLORS[i] + '20',
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 6
+                };
+            });
+
+            // Add break-even line (y=0)
+            cashFlowDatasets.push({
+                label: 'Punto de Equilibrio',
+                data: Array(24).fill(0),
+                borderColor: '#ef4444',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            });
+
+            cashFlowChart.data = {
+                labels: monthLabels,
+                datasets: cashFlowDatasets
+            };
+            cashFlowChart.update();
         }
 
         // Update legend
@@ -840,83 +961,161 @@
             const totalProfit = results.reduce((s, r) => s + r.profit, 0);
             const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
             const totalROI = totalInv > 0 ? ((totalProfit * 12) / totalInv) * 100 : 0;
+            const fecha = new Date().toLocaleDateString('es-MX');
 
-            // Header
-            doc.setFillColor(59, 130, 246);
-            doc.rect(0, 0, 210, 40, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(24);
+            // ===== HEADER =====
+            doc.setFillColor(255, 255, 255);
+            doc.rect(0, 0, 210, 297, 'F');
+            
+            // AGRANEL Logo text
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(28);
             doc.setFont('helvetica', 'bold');
-            doc.text('CALCULADORA ROI PREMIUM', 105, 25, { align: 'center' });
+            doc.text('AGRANEL', 15, 20);
+            
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            doc.text(`Generado: ${new Date().toLocaleDateString('es-MX')}`, 105, 32, { align: 'center' });
-
-            // Summary Box
-            doc.setFillColor(17, 24, 39);
-            doc.roundedRect(10, 50, 190, 35, 3, 3, 'F');
-            doc.setTextColor(59, 130, 246);
-            doc.setFontSize(12);
-            doc.text('RESUMEN TOTAL', 15, 60);
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(20);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`UTILIDAD MENSUAL: ${fmtMoney(totalProfit)}`, 15, 75);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Inversión Total: ${fmtMoney(totalInv)}  |  Recuperación: ${totalPayback === Infinity ? 'N/A' : fmtNum(totalPayback) + ' meses'}  |  ROI: ${fmtNum(totalROI, 0)}%`, 15, 82);
-
-            // Individual Table
-            let y = 95;
-            doc.setTextColor(59, 130, 246);
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('DESGLOSE INDIVIDUAL', 10, y);
-            y += 10;
-
-            // Table header
-            doc.setFillColor(31, 41, 55);
-            doc.rect(10, y-5, 190, 8, 'F');
-            doc.setTextColor(156, 163, 175);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Reporte de Inversión y Rentabilidad', 15, 27);
+            
+            // Date
             doc.setFontSize(9);
-            doc.text('Modelo', 12, y);
-            doc.text('Inversión', 70, y);
-            doc.text('Ventas', 100, y);
-            doc.text('Utilidad', 130, y);
-            doc.text('Recup.', 160, y);
-            doc.text('ROI', 185, y);
-            y += 8;
+            doc.text('Fecha de Emisión', 160, 15);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text(fecha, 160, 22);
 
-            // Table rows
+            // Separator line
+            doc.setDrawColor(200, 200, 200);
+            doc.line(15, 32, 195, 32);
+
+            // ===== TABLE =====
+            let y = 45;
+            
+            // Table header background
+            doc.setFillColor(245, 245, 245);
+            doc.rect(15, y-5, 180, 10, 'F');
+            
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(100, 100, 100);
+            doc.text('CONCEPTO', 20, y);
+            
+            let colX = 75;
             models.forEach((m, i) => {
-                const r = results[i];
-                doc.setTextColor(255, 255, 255);
-                doc.setFont('helvetica', 'normal');
-                doc.text(MACHINES[m.machineId].name, 12, y);
-                doc.text(fmtMoney(r.inv), 70, y);
-                doc.text(fmtMoney(r.sales), 100, y);
-                doc.setTextColor(r.profit >= 0 ? 16 : 239, r.profit >= 0 ? 185 : 68, r.profit >= 0 ? 129 : 68);
-                doc.text(fmtMoney(r.profit), 130, y);
-                doc.setTextColor(255, 255, 255);
-                doc.text(r.payback === Infinity ? '∞' : fmtNum(r.payback), 160, y);
-                doc.text(fmtNum(r.roi, 0) + '%', 185, y);
-                y += 7;
+                doc.text(`M${i+1}: ${MACHINES[m.machineId].name.toUpperCase()}`, colX, y);
+                colX += 45;
             });
 
-            // Total row
-            y += 2;
-            doc.setFillColor(59, 130, 246);
-            doc.rect(10, y-5, 190, 8, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFont('helvetica', 'bold');
-            doc.text('TOTAL', 12, y);
-            doc.text(fmtMoney(totalInv), 70, y);
-            doc.text(fmtMoney(totalSales), 100, y);
-            doc.text(fmtMoney(totalProfit), 130, y);
-            doc.text(totalPayback === Infinity ? '∞' : fmtNum(totalPayback), 160, y);
-            doc.text(fmtNum(totalROI, 0) + '%', 185, y);
+            y += 12;
 
-            doc.save('reporte-roi-premium.pdf');
+            // Table rows
+            const rowData = [
+                { label: 'Ventas', key: 'sales', format: 'money' },
+                { label: 'Costos Fijos', key: 'costs', format: 'money' },
+                { label: 'Utilidad Mensual', key: 'profit', format: 'money', highlight: true },
+                { label: 'Inversión', key: 'inv', format: 'money' },
+                { label: 'Recuperación (Meses)', key: 'payback', format: 'number' },
+                { label: 'Recuperación Media', key: 'paybackAvg', format: 'text' },
+                { label: 'ROI Anual', key: 'roi', format: 'percent' }
+            ];
+
+            rowData.forEach((row, rowIdx) => {
+                // Alternate row background
+                if (rowIdx % 2 === 0) {
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(15, y-4, 180, 8, 'F');
+                }
+
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(80, 80, 80);
+                doc.text(row.label, 20, y);
+
+                colX = 75;
+                results.forEach((r, i) => {
+                    let value;
+                    if (row.key === 'paybackAvg') {
+                        value = r.payback === Infinity ? '-' : fmtNum(r.payback) + ' meses';
+                    } else if (row.key === 'payback') {
+                        value = r.payback === Infinity ? '∞' : fmtNum(r.payback);
+                    } else if (row.format === 'money') {
+                        value = fmtMoney(r[row.key]);
+                    } else if (row.format === 'percent') {
+                        value = fmtNum(r[row.key], 0) + '%';
+                    } else {
+                        value = fmtNum(r[row.key]);
+                    }
+
+                    // Highlight profit row
+                    if (row.highlight) {
+                        doc.setTextColor(16, 185, 129);
+                        doc.setFont('helvetica', 'bold');
+                    } else {
+                        doc.setTextColor(0, 0, 0);
+                        doc.setFont('helvetica', 'normal');
+                    }
+                    
+                    doc.text(value, colX, y);
+                    colX += 45;
+                });
+
+                y += 10;
+            });
+
+            y += 5;
+
+            // ===== CHARTS SECTION =====
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(80, 80, 80);
+            doc.text('FLUJO ACUMULADO (24 MESES)', 15, y);
+
+            // Cash Flow Chart
+            const cashFlowCanvas = document.getElementById('cashFlowChart');
+            const cashFlowImg = cashFlowCanvas.toDataURL('image/png');
+            doc.addImage(cashFlowImg, 'PNG', 15, y + 5, 90, 60);
+
+            // ROI Chart
+            const roiCanvas = document.getElementById('paybackChart');
+            const roiImg = roiCanvas.toDataURL('image/png');
+            doc.addImage(roiImg, 'PNG', 110, y + 5, 85, 60);
+
+            // Legend
+            y += 75;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            let legendX = 20;
+            models.forEach((m, i) => {
+                doc.setFillColor(...hexToRgb(COLORS[i]));
+                doc.rect(legendX, y, 5, 5, 'F');
+                doc.setTextColor(0, 0, 0);
+                doc.text(`M${i+1}: ${MACHINES[m.machineId].name}`, legendX + 8, y + 4);
+                legendX += 60;
+            });
+
+            // Footer disclaimer
+            y += 15;
+            doc.setDrawColor(200, 200, 200);
+            doc.line(15, y, 195, y);
+            y += 8;
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text('Este documento muestra proyecciones financieras estimadas. Los resultados reales pueden variar según condiciones', 105, y, { align: 'center' });
+            doc.text('de mercado y operación.', 105, y + 4, { align: 'center' });
+            doc.text('Generado con Calculadora ROI Premium', 105, y + 10, { align: 'center' });
+
+            doc.save('reporte-roi-agranel.pdf');
+        }
+
+        // Helper function to convert hex to RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16)
+            ] : [0, 0, 0];
         }
 
         // Initialize
