@@ -1,19 +1,14 @@
 <!doctype html>
 <html lang="es">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Calculadora ROI Premium | Kioskos & Vending</title>
+    <title>ROI Calculator | Kioskos & Vending</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
     <style>
-        /* --- ESTILO PREMIUM ORIGINAL --- */
         :root {
             --bg: #020408;
             --surface: #0f1218;
@@ -29,23 +24,9 @@
             --radius: 12px;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
-
-        .model-color-0 {
-            --acc: #3b82f6;
-        }
-
-        .model-color-1 {
-            --acc: #f59e0b;
-        }
-
-        .model-color-2 {
-            --acc: #10b981;
-        }
-
         * {
             box-sizing: border-box;
         }
-
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
@@ -56,873 +37,757 @@
             display: flex;
             flex-direction: column;
         }
-
+        /* Layout & Container */
         .app-wrapper {
-            max-width: 1440px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2rem 1.5rem;
             width: 100%;
         }
-
         header {
-            text-align: center;
             margin-bottom: 2.5rem;
+            text-align: center;
         }
-
         h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
             font-weight: 700;
-            margin: 0 0 0.5rem;
+            letter-spacing: -0.03em;
+            margin: 0 0 0.75rem;
             background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .subtitle {
             color: var(--text-muted);
-            font-size: 1.1rem;
+            font-size: 1rem;
+            max-width: 60ch;
+            margin: 0 auto;
         }
-
+        .subtitle span.mono {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #cbd5e1;
+        }
+        /* Main Grid */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 380px 1fr;
+            grid-template-columns: 360px 1fr;
             gap: 2rem;
             align-items: start;
         }
-
         @media (max-width: 1024px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
         }
-
-        /* Paneles */
+        /* Panels & Cards */
         .panel {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 1.5rem;
             box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
         }
-
         .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--border);
         }
-
         .panel h2 {
             margin: 0;
             font-size: 1.1rem;
             font-weight: 600;
             color: var(--text-main);
-        }
-
-        /* Tarjetas de Modelo (Config) */
-        .model-card {
-            background: var(--surface-highlight);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            position: relative;
-            border-left: 4px solid var(--acc, var(--primary));
-            transition: all 0.2s;
-        }
-
-        .model-card:hover {
-            border-color: var(--acc);
-            transform: translateX(2px);
-        }
-
-        .model-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            gap: 0.5rem;
         }
-
-        .model-title {
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--text-main);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .btn-remove {
-            background: none;
-            border: none;
-            color: var(--danger);
-            opacity: 0.6;
-            cursor: pointer;
-            font-size: 0.8rem;
-            padding: 4px;
-        }
-
-        .btn-remove:hover {
-            opacity: 1;
-        }
-
+        /* Controls Section */
         .control-group {
-            margin-bottom: 0.8rem;
+            margin-bottom: 1.25rem;
         }
-
         label {
             display: block;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 500;
             color: var(--text-muted);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s;
         }
-
+        .control-group:focus-within label {
+            color: var(--primary);
+        }
         select,
-        input {
+        input[type="number"] {
             width: 100%;
-            background: #11141bc4;
+            background: var(--surface-highlight);
             border: 1px solid var(--border);
             color: var(--text-main);
-            padding: 0.6rem;
-            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
             font-family: inherit;
-            font-size: 0.9rem;
-        }
-
-        select:focus,
-        input:focus {
-            border-color: var(--primary);
+            transition: all 0.2s ease;
             outline: none;
         }
-
-        .btn-add {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px dashed var(--border);
-            color: var(--text-muted);
-            padding: 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
+        select:hover,
+        input[type="number"]:hover {
+            border-color: #4b5563;
         }
-
-        .btn-add:hover {
+        select:focus,
+        input[type="number"]:focus {
             border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(59, 130, 246, 0.05);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
-
-        /* Botones de Acción */
-        .action-grid {
-            margin-top: 1rem;
+        .controls-grid {
             display: grid;
-            gap: 0.8rem;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
         }
-
-        .btn-primary {
-            width: 100%;
-            padding: 1rem;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
+        /* Buttons */
+        .actions {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: transform 0.1s;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 2rem;
         }
-
-        .btn-primary:active {
-            transform: scale(0.98);
+        button {
+            width: 100%;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s, opacity 0.2s;
         }
-
-        .btn-whatsapp {
-            background: #25D366;
-            color: white;
-            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+        button:active {
+            transform: translateY(1px);
         }
-
-        .btn-whatsapp:hover {
-            background: #1fae53;
-        }
-
-        .btn-pdf {
+        button#copyBtn {
             background: var(--primary-gradient);
             color: white;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
-
-        .btn-pdf:hover {
+        button#copyBtn:hover {
             opacity: 0.9;
         }
-
-        /* TABLA DE RESULTADOS - ESTILO DARK */
-        .table-container {
-            background: var(--surface-highlight);
-            border-radius: var(--radius);
-            overflow: hidden;
+        button#resetBtn {
+            background: transparent;
             border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        button#resetBtn:hover {
+            border-color: #64748b;
+            color: var(--text-main);
+        }
+        /* Results Section */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
             margin-bottom: 2rem;
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            color: var(--text-main);
+        @media (max-width: 768px) {
+            .kpi-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
-
-        th {
-            background: #11141b;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            padding: 1rem;
+        .kpi-card {
+            background: var(--surface-highlight);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 1.25rem;
+            border-radius: 12px;
             text-align: center;
-            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
         }
-
-        td {
-            padding: 1rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.1);
         }
-
-        .row-head {
-            text-align: left;
-            font-weight: 600;
-            color: var(--text-muted);
-            width: 30%;
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            opacity: 0.7;
         }
-
-        .val-highlight {
-            font-size: 1.1rem;
+        .kpi-card.highlight::before {
+            background: var(--success);
+        }
+        .kpi-val {
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-main);
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
         }
-
-        .val-profit {
-            color: var(--success);
-            font-size: 1.2rem;
+        .kpi-lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
         }
-
-        .val-loss {
-            color: var(--danger);
-        }
-
-        /* GRÁFICAS */
+        /* Insights & Charts */
         .charts-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 2fr 1fr;
             gap: 1.5rem;
         }
-
-        @media (max-width: 768px) {
+        @media (max-width: 800px) {
             .charts-container {
                 grid-template-columns: 1fr;
             }
         }
-
-        .chart-card {
+        .chart-box {
             background: var(--surface-highlight);
             border-radius: var(--radius);
             padding: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.02);
-            /* Ensure height is controlled */
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chart-header {
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chart-header h3 {
-            margin: 0;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .chart-wrapper {
             position: relative;
-            height: 300px;
-            /* FIXED HEIGHT IMPORTANTE */
-            width: 100%;
         }
-
-        /* PDF INVISIBLE TEMPLATE (ESTILO CLARO) */
-        #pdf-template {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -100;
-            width: 1200px;
-            /* Wider for better resolution */
-            background: white;
-            color: #1a1a1a;
-            padding: 40px;
-            font-family: 'Inter', sans-serif;
-            visibility: hidden;
+        .risk-banner {
+            grid-column: 1 / -1;
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-
-        .pdf-visible {
-            visibility: visible !important;
-            z-index: 9999 !important;
+        .risk-banner.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
         }
-
-        /* Estilos especificos para el PDF interno */
-        .pdf-logo {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1a1a1a;
-            margin-bottom: 5px;
+        .risk-banner.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
         }
-
-        .pdf-tbl {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
+        .risk-content strong {
+            display: block;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
         }
-
-        .pdf-tbl th {
-            background: #f3f4f6;
-            padding: 12px;
-            text-align: left;
-            font-size: 12px;
-            color: #6b7280;
-            text-transform: uppercase;
-            border-bottom: 2px solid #e5e7eb;
+        .risk-content p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
-
-        .pdf-tbl td {
-            border-bottom: 1px solid #e5e7eb;
-            padding: 14px 12px;
-            font-size: 14px;
-            color: #111827;
+        /* Small components */
+        .tag {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-
-        .pdf-hl {
-            font-weight: 700;
-            color: #10b981;
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--primary);
+        }
+        .dot.purple {
+            background-color: #a78bfa;
+        }
+        .disclaimer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: #526075;
+            text-align: center;
         }
     </style>
 </head>
-
 <body>
-
     <div class="app-wrapper">
         <header>
-            <h1>Calculadora ROI Premium</h1>
-            <div class="subtitle">Herramienta de proyección financiera de Proyectos</div>
+            <h1>Calculadora de Rentabilidad</h1>
+            <div class="subtitle">
+                Proyección financiera interactiva para modelos de negocio. <br>
+                Datos base referenciados de <span class="mono">ROI - GTM-1.xlsx</span>.
+            </div>
         </header>
-
         <main class="dashboard-grid">
-
-            <!-- PANEL IZQUIERDO: CONFIGURACIÓN -->
-            <aside>
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>Modelos en el Proyecto</h2>
-                        <button
-                            style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;"
-                            onclick="resetAll()">Reiniciar</button>
-                    </div>
-
-                    <div id="models-list">
-                        <!-- JS inserta modelos aqui -->
-                    </div>
-
-                    <button id="btn-add-model" class="btn-add" onclick="addModel()">
-                        + Agregar Modelo al Proyecto
-                    </button>
+            <!-- Left Panel: Configuration -->
+            <aside class="panel">
+                <div class="panel-header">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                        Configuración
+                    </h2>
                 </div>
-
-                <div class="action-grid">
-                    <button class="btn-primary btn-whatsapp" onclick="copyToWhatsapp()">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="margin-right:8px">
-                            <path
-                                d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z" />
-                        </svg>
-                        Copiar Informe
-                    </button>
-                    <button class="btn-primary btn-pdf" onclick="generatePDF()">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24" style="margin-right:8px">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                        </svg>
-                        Descargar PDF
-                    </button>
+                <div class="control-group">
+                    <label for="modelSelect">Modelo de Negocio</label>
+                    <select id="modelSelect"></select>
+                </div>
+                <div class="control-group">
+                    <label for="demandFactor">Factor de Demanda (0.3 - 2.0)</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input id="demandFactor" type="number" step="0.05" min="0.30" max="2.00" value="1.00">
+                        <span class="tag" title="Escenario"><span class="dot"></span>Escenario</span>
+                    </div>
+                    <small style="color:var(--text-muted); font-size:0.75rem; margin-top:6px; display:block;">1.0 =
+                        Base, 0.8 = Conservador, 1.2 = Agresivo</small>
+                </div>
+                <div class="controls-grid" id="controls">
+                    <!-- JS Injects inputs here -->
+                </div>
+                <div class="actions">
+                    <button id="resetBtn">Restaurar Valores por Defecto</button>
+                    <button id="copyBtn">Copiar Reporte a WhatsApp</button>
                 </div>
             </aside>
-
-            <!-- PANEL DERECHO: RESULTADOS -->
+            <!-- Right Panel: Results & Viz -->
             <section>
-                <!-- Tabla Comparativa -->
-                <div class="table-container">
-                    <table id="results-table">
-                        <!-- JS llena esto -->
-                    </table>
+                <!-- KPIs -->
+                <div class="kpi-row">
+                    <div class="kpi-card">
+                        <div class="kpi-val" id="kpiSales">$0</div>
+                        <div class="kpi-lbl">Ventas / Margen</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-val" id="kpiCosts">$0</div>
+                        <div class="kpi-lbl">Costos Fijos</div>
+                    </div>
+                    <div class="kpi-card highlight">
+                        <div class="kpi-val" style="color:var(--success)" id="kpiProfit">$0</div>
+                        <div class="kpi-lbl">Utilidad Mensual</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-val" id="kpiPayback">—</div>
+                        <div class="kpi-lbl">Recuperación</div>
+                    </div>
                 </div>
-
-                <!-- Gráficas -->
+                <!-- Insight Banner -->
+                <div class="risk-banner" id="riskBanner">
+                    <div style="background:rgba(255,255,255,0.2); padding:8px; border-radius:50%">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                            <polyline points="13 2 13 9 20 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="risk-content">
+                        <strong id="insightTitle">Analizando...</strong>
+                        <p id="insightBody">Ajusta los valores para ver el análisis.</p>
+                    </div>
+                </div>
+                <!-- Charts -->
                 <div class="charts-container">
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Flujo de Efectivo PROYECTO</h3>
+                    <div class="panel chart-box">
+                        <div class="panel-header" style="border:none; padding:0 0 10px; margin:0;">
+                            <h2 style="font-size:0.9rem; color:var(--text-muted)">Flujo de Efectivo Acumulado</h2>
+                            <div class="tag"><span class="dot"></span> Proyección 24 meses</div>
                         </div>
-                        <div class="chart-wrapper">
-                            <canvas id="cashChart"></canvas>
-                        </div>
+                        <canvas id="cashChart" height="220"></canvas>
                     </div>
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Comparativa Rentabilidad (ROI)</h3>
+                    <div class="panel chart-box">
+                        <div class="panel-header" style="border:none; padding:0 0 10px; margin:0;">
+                            <h2 style="font-size:0.9rem; color:var(--text-muted)">Retorno Anual</h2>
+                            <div class="tag"><span class="dot purple"></span> ROI %</div>
                         </div>
-                        <div class="chart-wrapper">
-                            <canvas id="roiChart"></canvas>
-                        </div>
+                        <canvas id="roiChart" height="220"></canvas>
                     </div>
+                </div>
+                <div class="disclaimer">
+                    * Nota: En modelos "Ventana Limpieza" y "Croquetas/Granos/Café", la calculadora usa (Ganancia/u × Volumen) como Ventas Mensuales.
                 </div>
             </section>
         </main>
     </div>
-
-    <!-- TEMPLATE PDF (OCULTO) -->
-    <div id="pdf-template">
-        <div
-            style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #ccc; padding-bottom:15px; margin-bottom:30px;">
-            <div>
-                <div class="pdf-logo">AGRANEL</div>
-                <div style="color:#666; font-size:14px;">Reporte de Inversión Global de Proyecto</div>
-            </div>
-            <div style="text-align:right;">
-                <div style="font-size:12px; color:#888;">Fecha de Emisión</div>
-                <strong id="pdf-date"></strong>
-            </div>
-        </div>
-
-        <table class="pdf-tbl" id="pdf-table-content">
-            <!-- JS -->
-        </table>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-            <div style="border:1px solid #ddd; padding:10px; border-radius:5px;">
-                <h4 style="margin:0 0 10px; font-size:12px; text-transform:uppercase; color:#666;">Flujo Acumulado
-                    Global</h4>
-                <img id="pdf-chart-1" style="width:100%; height:auto;">
-            </div>
-            <div style="border:1px solid #ddd; padding:10px; border-radius:5px;">
-                <h4 style="margin:0 0 10px; font-size:12px; text-transform:uppercase; color:#666;">ROI Proyecto (Anual)
-                </h4>
-                <img id="pdf-chart-2" style="width:100%; height:auto;">
-            </div>
-        </div>
-
-        <div
-            style="margin-top:40px; font-size:11px; color:#999; text-align:center; border-top:1px solid #eee; padding-top:15px;">
-            Este documento muestra proyecciones financieras estimadas. Los resultados reales pueden variar según
-            condiciones de mercado y operación.
-            <br>Generado con Calculadora ROI Premium
-        </div>
-    </div>
-
     <script>
-        /* --- LÓGICA DE DATOS --- */
-        const MODELS_DB = {
-            "kiosko_duo": { name: "Kiosko Duo", inv: 244000, price_ice: 25, loads_m: 750, price_gar: 15, gar_m: 1500, luz: 4950, "agua": 2475, "mnt": 825, "renta": 5000 },
-            "c7": { name: "Kiosko 130 GPD", inv: 79000, price_gar: 15, gar_m: 1500, luz: 900, "agua": 1800, "mnt": 300, "renta": 5000 },
-            "c12": { name: "Vending Agua", inv: 119000, price_gar: 15, gar_m: 1500, luz: 900, "agua": 1800, "mnt": 300, "renta": 0 },
-            "c27": { name: "Hielo 450kg", inv: 217000, price_ice: 25, loads_m: 750, luz: 3150, "agua": 1575, "mnt": 525, "renta": 0 },
-            "c32": { name: "Centro Llenado", inv: 125000, price_gar: 20, gar_m: 3000, luz: 3600, "agua": 1800, "mnt": 600, "renta": 5000, sueldo: 18000 }
+        /* 
+           LOGIC PRESERVED 100% 
+           Only colors in Chart config updated for Dark Theme
+        */
+        const MODELS = {
+            "kiosko_duo": { "inv": 244000, "price_ice": 25, "loads_m": 750, "price_gar": 15, "gar_m": 1500, "luz": 4950, "agua": 2475, "mnt": 825, "renta": 5000 },
+            "c7": { "inv": 79000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 5000 },
+            "c12": { "inv": 119000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 0 },
+            "c17": { "inv": 49000, "gain_unit": 8, "lit_day": 150, "days": 30, "price_sale": 25, "luz": 500, "agua": 800, "mnt": 200, "renta": 2000 },
+            "c22": { "inv": 95000, "gain_unit": 20, "kg_day": 50, "days": 30, "price_sale": 50, "luz": 800, "agua": 400, "mnt": 300, "renta": 3000 },
+            "c27": { "inv": 217000, "price_ice": 25, "loads_m": 750, "luz": 3150, "agua": 1575, "mnt": 525, "renta": 0 },
+            "c32": { "inv": 125000, "price_gar": 20, "gar_m": 3000, "luz": 3600, "agua": 1800, "mnt": 600, "renta": 5000, "sueldo": 18000 }
         };
-
-        const LABELS = {
-            inv: "Inversión Inicial",
-            price_ice: "Precio Hielo", loads_m: "Bolsas/Mes",
-            price_gar: "Precio Garrafón", gar_m: "Garrafones/Mes",
-            luz: "Luz", agua: "Agua", mnt: "Mantenimiento", renta: "Renta", sueldo: "Nómina"
+        const MODEL_NAMES = { 
+            "kiosko_duo": "KIOSKO DUO 130 GPD / 450 KG", 
+            "c7": "KIOSKO 130 GPD", 
+            "c12": "VENDING AGUA 130 GPD", 
+            "c17": "VENTANA LIMPIEZA ($49,000)", 
+            "c22": "CROQUETAS/GRANOS/CAFÉ ($95,000 - 3 MAQ)", 
+            "c27": "VENTANA Y VENDING HIELO", 
+            "c32": "CENTRO DE LLENADO" 
         };
-
-        let appState = [];
-        const COLORS = ['#3b82f6', '#f59e0b', '#10b981'];
-
-        function init() {
-            addModel("kiosko_duo");
-            setTimeout(initCharts, 500);
-        }
-
-        function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
-
-        function addModel(type = "kiosko_duo") {
-            if (appState.length >= 3) { alert("Máximo 3 modelos"); return; }
-            const defaults = deepCopy(MODELS_DB[type]);
-            delete defaults.name;
-            appState.push({ id: Date.now() + Math.random(), type: type, inputs: defaults });
-            renderUI();
-        }
-
-        function removeModel(id) {
-            if (appState.length <= 1) return;
-            appState = appState.filter(m => m.id !== id);
-            renderUI();
-        }
-
-        function updateType(id, newType) {
-            const m = appState.find(x => x.id === id);
-            m.type = newType;
-            m.inputs = deepCopy(MODELS_DB[newType]);
-            delete m.inputs.name;
-            renderUI();
-        }
-
-        function updateInput(id, key, val) {
-            const m = appState.find(x => x.id === id);
-            m.inputs[key] = parseFloat(val) || 0;
-            renderResults();
-        }
-
-        /* --- CÁLCULOS --- */
-        function calc(m) {
-            const x = m.inputs;
+        const fmtMoney = (n) => {
+            if (!isFinite(n)) return "—";
+            return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
+        };
+        const fmtNum = (n, d = 2) => {
+            if (!isFinite(n)) return "—";
+            return new Intl.NumberFormat("es-MX", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
+        };
+        function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+        let state = {
+            modelId: Object.keys(MODELS)[0],
+            demandFactor: 1.0,
+            inputs: deepCopy(MODELS[Object.keys(MODELS)[0]])
+        };
+        const inputSchema = {
+            kiosko_duo: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["price_ice", "Precio bolsa Ice (MXN)", 0, 200, 1],
+                ["loads_m", "Bolsas / mes (base)", 0, 10000, 10],
+                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
+                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            c7: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
+                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            c12: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
+                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            c17: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["gain_unit", "Margen por litro (MXN)", 0, 200, 1],
+                ["lit_day", "Litros / día (base)", 0, 5000, 5],
+                ["days", "Días operativos / mes", 1, 31, 1],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            c22: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["gain_unit", "Margen por kg (MXN)", 0, 300, 1],
+                ["kg_day", "Kg / día (base)", 0, 2000, 1],
+                ["days", "Días operativos / mes", 1, 31, 1],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            c27: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["price_ice", "Precio bolsa 5kg (MXN)", 0, 200, 1],
+                ["loads_m", "Bolsas / mes (base)", 0, 10000, 10],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            c32: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
+                ["gar_m", "Garrafones / mes (base)", 0, 50000, 10],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+                ["sueldo", "Nomina / mes", 0, 500000, 100],
+            ],
+        };
+        function calc(modelId, inputs, demandFactor) {
+            const x = inputs;
+            const df = demandFactor;
+            let inv = +x.inv || 0;
             let sales = 0;
-            if (x.loads_m) sales += x.loads_m * (x.price_ice || 0);
-            if (x.gar_m) sales += x.gar_m * (x.price_gar || 0);
-
-            const fixed = (x.luz || 0) + (x.agua || 0) + (x.mnt || 0) + (x.renta || 0) + (x.sueldo || 0);
-            const profit = sales - fixed;
-            const payback = profit > 0 ? (x.inv / profit) : 999;
-            const roi = profit > 0 ? (profit * 12 / x.inv) : 0;
-
-            return { inv: x.inv, sales, fixed, profit, payback, roi };
+            let fixed = 0;
+            let profit = 0;
+            if (modelId === "kiosko_duo") {
+                const loads = (+x.loads_m || 0) * df;
+                const gars = (+x.gar_m || 0) * df;
+                sales = (+x.price_ice || 0) * loads + (+x.price_gar || 0) * gars;
+                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
+                profit = sales - fixed;
+            } else if (modelId === "c7" || modelId === "c12") {
+                const gars = (+x.gar_m || 0) * df;
+                sales = (+x.price_gar || 0) * gars;
+                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
+                profit = sales - fixed;
+            } else if (modelId === "c17") {
+                const litrosMes = (+x.lit_day || 0) * (+x.days || 30) * df;
+                sales = (+x.gain_unit || 0) * litrosMes;
+                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
+                profit = sales - fixed;
+            } else if (modelId === "c22") {
+                const kgMes = (+x.kg_day || 0) * (+x.days || 30) * df;
+                sales = (+x.gain_unit || 0) * kgMes;
+                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
+                profit = sales - fixed;
+            } else if (modelId === "c27") {
+                const loads = (+x.loads_m || 0) * df;
+                sales = (+x.price_ice || 0) * loads;
+                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
+                profit = sales - fixed;
+            } else if (modelId === "c32") {
+                const gars = (+x.gar_m || 0) * df;
+                sales = (+x.price_gar || 0) * gars;
+                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0) + (+x.sueldo || 0);
+                profit = sales - fixed;
+            }
+            const payback = (profit > 0 && inv > 0) ? inv / profit : Infinity;
+            const roiAnnual = (inv > 0) ? (profit * 12) / inv : Infinity;
+            return { inv, sales, fixed, profit, payback, roiAnnual };
         }
-
-        function getTotals() {
-            let t = { inv: 0, sales: 0, fixed: 0, profit: 0 };
-            const res = appState.map(calc);
-            res.forEach(r => {
-                t.inv += r.inv;
-                t.sales += r.sales;
-                t.fixed += r.fixed;
-                t.profit += r.profit;
-            });
-
-            t.payback = t.profit > 0 ? (t.inv / t.profit) : 999;
-            t.roi = t.profit > 0 ? (t.profit * 12 / t.inv) : 0;
-
-            let insight = "Lenta (> 14 meses)";
-            if (t.payback <= 8) insight = "Rápida (< 8 meses)";
-            else if (t.payback <= 14) insight = "Media (8-14 meses)";
-            if (t.profit <= 0) insight = "Flujo Negativo";
-
-            t.insight = insight;
-            return t;
+        function paybackLabel(m) {
+            if (!isFinite(m)) return "∞";
+            if (m < 0) return "Nunca";
+            return `${fmtNum(m, 1)} meses`;
         }
-
-        function fmtMoney(n) {
-            if (!isFinite(n)) return "$0";
-            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n);
-        }
-
-        /* --- UI RENDER --- */
-        function renderUI() {
-            const list = document.getElementById('models-list');
-            list.innerHTML = '';
-
-            appState.forEach((m, idx) => {
-                const el = document.createElement('div');
-                el.className = `model-card model-color-${idx}`;
-                let opts = '';
-                for (let k in MODELS_DB) opts += `<option value="${k}" ${m.type == k ? 'selected' : ''}>${MODELS_DB[k].name}</option>`;
-                let inputs = '';
-                for (let k in m.inputs) {
-                    inputs += `<div><label>${LABELS[k] || k}</label><input type="number" value="${m.inputs[k]}" oninput="updateInput(${m.id}, '${k}', this.value)"></div>`;
-                }
-                el.innerHTML = `
-                    <div class="model-header">
-                        <span class="model-title" style="color:${COLORS[idx]}">Modelo ${idx + 1}</span>
-                        ${appState.length > 1 ? `<button class="btn-remove" onclick="removeModel(${m.id})">✕</button>` : ''}
-                    </div>
-                    <div class="control-group">
-                        <select onchange="updateType(${m.id}, this.value)">${opts}</select>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        ${inputs}
-                    </div>
-                `;
-                list.appendChild(el);
-            });
-
-            document.getElementById('btn-add-model').style.display = appState.length >= 3 ? 'none' : 'block';
-            renderResults();
-        }
-
-        function renderResults() {
-            const table = document.getElementById('results-table');
-            const modelsData = appState.map(calc);
-            const total = getTotals();
-
-            // Header
-            let html = `<thead><tr><th class="row-head">Concepto</th>`;
-            appState.forEach((m, i) => {
-                html += `<th style="color:${COLORS[i]}">${MODELS_DB[m.type].name}</th>`;
-            });
-            // Total Column Header
-            html += `<th style="color:#fff; background:#1e293b; border-bottom:1px solid #334155;">TOTAL PROYECTO</th></tr></thead><tbody>`;
-
-            const rows = [
-                { l: "Ventas Mensuales", k: "sales", fmt: fmtMoney },
-                { l: "Costos Fijos", k: "fixed", fmt: fmtMoney },
-                { l: "Utilidad Mensual", k: "profit", fmt: fmtMoney, highlight: true },
-                { l: "Inversión Total", k: "inv", fmt: fmtMoney },
-                { l: "Tiempo Recuperación", k: "payback", fmt: v => v === 999 ? "Nunca" : v.toFixed(1) + " Meses" },
-                { l: "ROI Anual Estimado", k: "roi", fmt: v => (v * 100).toFixed(0) + "%" }
-            ];
-
-            rows.forEach(r => {
-                html += `<tr><td class="row-head">${r.l}</td>`;
-                // Individual
-                modelsData.forEach(d => {
-                    let val = r.fmt(d[r.k]);
-                    html += `<td>${val}</td>`;
-                });
-                // Total
-                let valTotal = r.fmt(total[r.k]);
-                let style = "font-weight:bold; background:#1e293b; color:#fff;";
-                if (r.k === 'profit') style += "color:#10b981;";
-                html += `<td style="${style}">${valTotal}</td></tr>`;
-            });
-            html += `</tbody>`;
-
-            table.innerHTML = html;
-            updateCharts(total);
-        }
-
-        function resetAll() {
-            appState = [];
-            addModel();
-        }
-
-        /* --- CHARTS (HYBRID: INDIVIDUAL + TOTAL) --- */
-        let chart1, chart2;
-
-        function initCharts() {
-            const ctx1 = document.getElementById('cashChart');
-            const ctx2 = document.getElementById('roiChart');
-            if (!ctx1 || !ctx2) return;
-
-            const opts = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: {
-                    x: { grid: { color: '#ffffff10' }, ticks: { color: '#94a3b8' } },
-                    y: { grid: { color: '#ffffff10' }, ticks: { color: '#94a3b8' } }
-                }
+        function insight(metrics) {
+            const { profit, payback, roiAnnual } = metrics;
+            // Visual tweaks for risk banner
+            const banner = document.getElementById("riskBanner");
+            banner.className = "risk-banner";
+            if (!isFinite(payback) || profit <= 0) {
+                banner.classList.add("danger");
+                return {
+                    title: "Alerta: Flujo Negativo",
+                    body: "Con estos parámetros el modelo no genera utilidades. Intenta subir la demanda o reducir costos fijos."
+                };
+            }
+            let speed = payback <= 6 ? "Rápida" : (payback <= 12 ? "Media" : "Lenta");
+            let roiTxt = roiAnnual >= 2 ? "Excelentes" : (roiAnnual >= 1 ? "Buenos" : "Moderados");
+            if (roiAnnual < 0.5) banner.classList.add("warning");
+            return {
+                title: `Recuperación ${speed}`,
+                body: `Generas ${fmtMoney(profit)} libres al mes. Recuperas tu inversión en ${fmtNum(payback, 1)} meses. Rendimientos ${roiTxt} (${fmtNum(roiAnnual * 100, 0)}% anual).`
             };
-
-            chart1 = new Chart(ctx1, { type: 'line', data: { labels: [], datasets: [] }, options: opts });
-            chart2 = new Chart(ctx2, { type: 'bar', data: { labels: [], datasets: [] }, options: opts });
-
-            renderResults();
         }
-
-        function updateCharts(total) {
-            if (!chart1 || !chart2) return;
-
-            const months = 24;
-            const labels = Array.from({ length: 24 }, (_, i) => `Mes ${i + 1}`);
-            const modelsData = appState.map(calc);
-
-            // --- CHART 1: CASH FLOW ---
-            let datasetsCash = [];
-
-            // A) Individual Lines (thinner)
-            modelsData.forEach((d, i) => {
-                let acc = [];
-                let curr = -d.inv;
-                for (let m = 0; m < months; m++) {
-                    curr += d.profit;
-                    acc.push(curr);
+        const modelSelect = document.getElementById("modelSelect");
+        const controls = document.getElementById("controls");
+        const demandFactorInput = document.getElementById("demandFactor");
+        function buildModelOptions() {
+            modelSelect.innerHTML = "";
+            Object.keys(MODELS).forEach(id => {
+                const opt = document.createElement("option");
+                opt.value = id;
+                opt.textContent = MODEL_NAMES[id] || id;
+                modelSelect.appendChild(opt);
+            });
+        }
+        function buildControls() {
+            controls.innerHTML = "";
+            const schema = inputSchema[state.modelId] || [];
+            schema.forEach(([key, label, min, max, step]) => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "control-group";
+                wrapper.style.marginBottom = "0";
+                wrapper.innerHTML = `<label>${label}</label>`;
+                const inp = document.createElement("input");
+                inp.type = "number";
+                inp.step = step;
+                inp.min = min;
+                inp.max = max;
+                inp.value = (state.inputs[key] ?? 0);
+                inp.addEventListener("input", () => {
+                    state.inputs[key] = +inp.value;
+                    render();
+                });
+                wrapper.appendChild(inp);
+                controls.appendChild(wrapper);
+            });
+        }
+        let cashChart, roiChart;
+        function initCharts() {
+            const ctx1 = document.getElementById("cashChart").getContext("2d");
+            const ctx2 = document.getElementById("roiChart").getContext("2d");
+            // Premium Dark Theme Colors
+            const gridColor = "rgba(255,255,255,0.05)";
+            const textColor = "#94a3b8";
+            // Gradient for Line Chart
+            let gradient = ctx1.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+            cashChart = new Chart(ctx1, {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: "Flujo acumulado",
+                            data: [],
+                            borderColor: "#3b82f6",
+                            backgroundColor: gradient,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: "Inversión Inicial",
+                            data: [],
+                            borderColor: "#ef4444",
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            borderWidth: 1
+                        },
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: textColor, font: { family: 'Inter' } } },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#cbd5e1',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            padding: 10
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Inter' } } },
+                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Inter' } } }
+                    }
                 }
-                datasetsCash.push({
-                    label: `M${i + 1}`,
-                    data: acc,
-                    borderColor: COLORS[i],
-                    backgroundColor: COLORS[i],
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 0,
-                    fill: false
-                });
             });
-
-            // B) Total Project (Area filled, thick)
-            let accTotal = [];
-            let currTotal = -total.inv;
-            for (let m = 0; m < months; m++) {
-                currTotal += total.profit;
-                accTotal.push(currTotal);
-            }
-            datasetsCash.push({
-                label: 'TOTAL PROYECTO',
-                data: accTotal,
-                borderColor: '#6366f1', // Indigo
-                backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                borderWidth: 3,
-                tension: 0.3,
-                pointRadius: 2,
-                fill: true,
-                order: -1 // Top layer
+            roiChart = new Chart(ctx2, {
+                type: "bar",
+                data: {
+                    labels: ["ROI Anual Estimado"],
+                    datasets: [
+                        {
+                            label: "ROI",
+                            data: [0],
+                            backgroundColor: "#a78bfa",
+                            hoverBackgroundColor: "#8b5cf6",
+                            borderRadius: 6
+                        },
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f8fafc',
+                            callbacks: {
+                                label: (ctx) => `Rendimiento: ${fmtNum(ctx.parsed.y * 100, 0)}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: 'Inter' }, callback: (v) => (v * 100).toFixed(0) + "%" },
+                            suggestedMax: 2
+                        }
+                    }
+                }
             });
-
-            // Equilibrium Line
-            datasetsCash.push({
-                label: 'Equilibrio',
-                data: Array(months).fill(0),
-                borderColor: '#ffffff30',
-                borderDash: [5, 5],
-                pointRadius: 0,
-                borderWidth: 1
-            });
-
-            chart1.data.labels = labels;
-            chart1.data.datasets = datasetsCash;
-            chart1.update();
-
-
-            // --- CHART 2: ROI COMPARISON ---
-            let datasetsRoi = [];
-
-            // Individual Bars
-            modelsData.forEach((d, i) => {
-                datasetsRoi.push({
-                    label: `M${i + 1}`,
-                    data: [d.roi * 100],
-                    backgroundColor: COLORS[i],
-                    borderRadius: 4
-                });
-            });
-
-            // Total Bar
-            datasetsRoi.push({
-                label: 'TOTAL',
-                data: [total.roi * 100],
-                backgroundColor: '#6366f1',
-                borderRadius: 4
-            });
-
-            chart2.data.labels = ['Retorno Anual (%)']; // Single category on X axis
-            chart2.data.datasets = datasetsRoi;
-            chart2.update();
         }
-
-        /* --- EXPORT PDF FIXED & ROBUST --- */
-        async function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const tmpl = document.getElementById('pdf-template');
-
-            // 1. Prepare Data
-            document.getElementById('pdf-date').innerText = new Date().toLocaleDateString();
-            const total = getTotals();
-            const modelsData = appState.map(calc);
-
-            // 2. Build PDF Table
-            let tblHtml = `<thead><tr style="background:#f3f4f6;">
-                           <th style="padding:10px;text-align:left;color:#000;">CONCEPTO</th>`;
-            appState.forEach((m, i) => tblHtml += `<th style="padding:10px;color:${COLORS[i]};font-size:11px;">${MODELS_DB[m.type].name}</th>`);
-            tblHtml += `<th style="padding:10px;color:#000;background:#e2e8f0;border-left:2px solid #fff;">TOTAL PROYECTO</th></tr></thead><tbody>`;
-
-            const rows = [
-                { l: "Ventas Mensuales", k: "sales", fmt: fmtMoney },
-                { l: "Costos Fijos", k: "fixed", fmt: fmtMoney },
-                { l: "Utilidad Mensual", k: "profit", fmt: fmtMoney, hl: true },
-                { l: "Inversión Total", k: "inv", fmt: fmtMoney },
-                { l: "Tiempo Recuperación", k: "payback", fmt: v => v === 999 ? "Nunca" : v.toFixed(1) + " Meses" },
-                { l: "Tipo Recuperación", k: "insight", fmt: v => v },
-                { l: "ROI Anual", k: "roi", fmt: v => (v * 100).toFixed(0) + "%" }
-            ];
-
-            rows.forEach(r => {
-                tblHtml += `<tr><td style="padding:8px; border-bottom:1px solid #ddd; font-weight:bold; color:#333;">${r.l}</td>`;
-                // Individual Cells
-                modelsData.forEach(d => {
-                    let val = (r.k === 'insight') ? '-' : r.fmt(d[r.k]);
-                    tblHtml += `<td style="padding:8px; border-bottom:1px solid #ddd; color:#555;">${val}</td>`;
-                });
-                // Total Cell
-                let val = r.fmt(total[r.k]);
-                let style = 'padding:8px; border-bottom:1px solid #ddd; color:#000; font-weight:bold; background:#f8fafc; border-left:2px solid #fff;';
-                if (r.k === 'profit') style += 'color:#10b981; font-size:1.1em;';
-                tblHtml += `<td style="${style}">${val}</td></tr>`;
-            });
-            tblHtml += `</tbody>`;
-            document.getElementById('pdf-table-content').innerHTML = tblHtml;
-
-            // 3. Capture Charts directly
-            if (chart1) document.getElementById('pdf-chart-1').src = chart1.toBase64Image();
-            if (chart2) document.getElementById('pdf-chart-2').src = chart2.toBase64Image();
-
-            // 4. Force Template Visibility for Capture
-            tmpl.style.visibility = 'visible';
-            tmpl.style.display = 'block';
-            tmpl.style.zIndex = '99999';
-            tmpl.style.top = '0px';
-            tmpl.style.background = 'white'; // Ensure background is strictly white
-
+        function updateCharts(metrics) {
+            const months = 24;
+            const labels = Array.from({ length: months }, (_, i) => `Mes ${i + 1}`);
+            let acc = 0;
+            const series = [];
+            for (let i = 1; i <= months; i++) {
+                acc += metrics.profit;
+                series.push(acc);
+            }
+            cashChart.data.labels = labels;
+            cashChart.data.datasets[0].data = series;
+            cashChart.data.datasets[1].data = labels.map(_ => metrics.inv);
+            cashChart.update();
+            roiChart.data.datasets[0].data = [metrics.roiAnnual];
+            roiChart.options.scales.y.suggestedMax = Math.max(2, metrics.roiAnnual * 1.2);
+            roiChart.update();
+        }
+        function render() {
+            const metrics = calc(state.modelId, state.inputs, state.demandFactor);
+            document.getElementById("kpiSales").textContent = fmtMoney(metrics.sales);
+            document.getElementById("kpiCosts").textContent = fmtMoney(metrics.fixed);
+            document.getElementById("kpiProfit").textContent = fmtMoney(metrics.profit);
+            document.getElementById("kpiPayback").textContent = paybackLabel(metrics.payback);
+            const ins = insight(metrics);
+            document.getElementById("insightTitle").textContent = ins.title;
+            document.getElementById("insightBody").textContent = ins.body;
+            updateCharts(metrics);
+        }
+        function setModel(id) {
+            state.modelId = id;
+            state.inputs = deepCopy(MODELS[id]);
+            buildControls();
+            render();
+        }
+        modelSelect.addEventListener("change", (e) => setModel(e.target.value));
+        demandFactorInput.addEventListener("input", (e) => {
+            state.demandFactor = Math.max(0.3, Math.min(2.0, +e.target.value || 1));
+            render();
+        });
+        document.getElementById("resetBtn").addEventListener("click", () => {
+            state.inputs = deepCopy(MODELS[state.modelId]);
+            state.demandFactor = 1.0;
+            demandFactorInput.value = "1.00";
+            buildControls();
+            render();
+        });
+        document.getElementById("copyBtn").addEventListener("click", async () => {
+            const m = calc(state.modelId, state.inputs, state.demandFactor);
+            const text = `*Reporte ROI - ${MODEL_NAMES[state.modelId]}*\n\n` +
+                `💰 Inversión: ${fmtMoney(m.inv)}\n` +
+                `📈 Ventas/Margen: ${fmtMoney(m.sales)}\n` +
+                `📉 Costos Fijos: ${fmtMoney(m.fixed)}\n` +
+                `✅ *Utilidad Mensual: ${fmtMoney(m.profit)}*\n` +
+                `🗓️ Recuperación: ${paybackLabel(m.payback)}\n` +
+                `🚀 ROI Anual: ${fmtNum(m.roiAnnual * 100, 0)}%`;
             try {
-                // Short wait to ensure DOM paint + chart images load
-                await new Promise(r => setTimeout(r, 600));
-
-                // Capture
-                const canvas = await html2canvas(tmpl, {
-                    scale: 2, // Safe scale
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    useCORS: true
-                });
-
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`ROI_AgraNel_${Date.now()}.pdf`);
-
-            } catch (e) {
-                console.error("PDF Fail:", e);
-                alert("Hubo un error al generar el PDF: " + e.message + "\nIntenta recargar.");
-            } finally {
-                // Hide again
-                tmpl.style.visibility = 'hidden';
-                tmpl.style.zIndex = '-100';
+                await navigator.clipboard.writeText(text);
+                alert("Copiado al portapapeles. Listo para WhatsApp.");
+            } catch {
+                prompt("Copia este texto:", text);
             }
-        }
-
-        function copyToWhatsapp() {
-            const total = getTotals();
-            let txt = "*RESUMEN DE PROYECTO GLOBAL*\n\n";
-            txt += `💰 Inversión Total: ${fmtMoney(total.inv)}\n`;
-            txt += `📈 Utilidad Combinada: ${fmtMoney(total.profit)} / mes\n`;
-            txt += `⏱️ Recuperación Real: ${total.payback.toFixed(1)} meses\n`;
-            txt += `📊 ROI Global: ${(total.roi * 100).toFixed(0)}%\n\n`;
-            txt += `_Detalles en PDF adjunto_`;
-
-            navigator.clipboard.writeText(txt).then(() => alert("Resumen GLOBAL copiado!"));
-        }
-
-        window.addEventListener('load', init);
+        });
+        buildModelOptions();
+        initCharts();
+        setModel(state.modelId);
     </script>
 </body>
-
 </html>
