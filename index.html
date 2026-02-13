@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --bg: #020408;
@@ -39,7 +41,7 @@
         }
         /* Layout & Container */
         .app-wrapper {
-            max-width: 1280px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem 1.5rem;
             width: 100%;
@@ -64,18 +66,10 @@
             max-width: 60ch;
             margin: 0 auto;
         }
-        .subtitle span.mono {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.9em;
-            color: #cbd5e1;
-        }
         /* Main Grid */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 360px 1fr;
+            grid-template-columns: 400px 1fr;
             gap: 2rem;
             align-items: start;
         }
@@ -109,30 +103,57 @@
             align-items: center;
             gap: 0.5rem;
         }
+        /* Model Cards */
+        .model-card {
+            background: var(--surface-highlight);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .model-card.model-color-0 { border-left: 3px solid #3b82f6; }
+        .model-card.model-color-1 { border-left: 3px solid #f59e0b; }
+        .model-card.model-color-2 { border-left: 3px solid #10b981; }
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .model-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .btn-remove {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0;
+            width: auto;
+        }
         /* Controls Section */
         .control-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
         }
         label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
             color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            transition: color 0.2s;
-        }
-        .control-group:focus-within label {
-            color: var(--primary);
+            margin-bottom: 0.3rem;
         }
         select,
         input[type="number"] {
             width: 100%;
-            background: var(--surface-highlight);
+            background: var(--bg);
             border: 1px solid var(--border);
             color: var(--text-main);
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 0.95rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
             font-family: inherit;
             transition: all 0.2s ease;
             outline: none;
@@ -144,61 +165,73 @@
         select:focus,
         input[type="number"]:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
         }
-        /* Style for optgroup */
         select optgroup {
             background: var(--surface-highlight);
             color: var(--text-main);
             font-weight: 600;
-            padding: 8px;
         }
         select option {
             background: var(--surface);
             color: var(--text-main);
-            padding: 8px;
         }
         .controls-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
         }
         /* Buttons */
-        .actions {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-top: 2rem;
-        }
-        button {
+        .btn-add {
             width: 100%;
+            padding: 0.75rem;
+            background: transparent;
+            border: 2px dashed var(--border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-add:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .btn-add:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .btn-primary {
             padding: 0.85rem;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
             border: none;
-            transition: transform 0.1s, opacity 0.2s;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        button:active {
-            transform: translateY(1px);
-        }
-        button#copyBtn {
-            background: var(--primary-gradient);
+        .btn-whatsapp {
+            background: #25d366;
             color: white;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
-        button#copyBtn:hover {
-            opacity: 0.9;
+        .btn-whatsapp:hover {
+            background: #128c7e;
         }
-        button#resetBtn {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
+        .btn-pdf {
+            background: #ef4444;
+            color: white;
         }
-        button#resetBtn:hover {
-            border-color: #64748b;
-            color: var(--text-main);
+        .btn-pdf:hover {
+            background: #dc2626;
         }
         /* Results Section */
         .kpi-row {
@@ -218,13 +251,6 @@
             padding: 1.25rem;
             border-radius: 12px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s;
-        }
-        .kpi-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(255, 255, 255, 0.1);
         }
         .kpi-card::before {
             content: '';
@@ -234,26 +260,41 @@
             right: 0;
             height: 3px;
             background: var(--primary-gradient);
-            opacity: 0.7;
-        }
-        .kpi-card.highlight::before {
-            background: var(--success);
         }
         .kpi-val {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-main);
             margin-bottom: 0.25rem;
-            letter-spacing: -0.02em;
         }
         .kpi-lbl {
             font-size: 0.75rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 500;
         }
-        /* Insights & Charts */
+        /* Table */
+        .table-container {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        /* Charts */
         .charts-container {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -269,7 +310,6 @@
             border-radius: var(--radius);
             padding: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.02);
-            position: relative;
             min-height: 280px;
             display: flex;
             flex-direction: column;
@@ -277,55 +317,6 @@
         .chart-box canvas {
             flex: 1;
             max-height: 240px;
-        }
-        .risk-banner {
-            grid-column: 1 / -1;
-            background: rgba(16, 185, 129, 0.1);
-            border-left: 4px solid var(--success);
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .risk-banner.warning {
-            background: rgba(245, 158, 11, 0.1);
-            border-color: var(--warning);
-        }
-        .risk-banner.danger {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: var(--danger);
-        }
-        .risk-content strong {
-            display: block;
-            color: var(--text-main);
-            margin-bottom: 0.25rem;
-        }
-        .risk-content p {
-            margin: 0;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        /* Small components */
-        .tag {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: var(--primary);
-        }
-        .dot.purple {
-            background-color: #a78bfa;
         }
         .disclaimer {
             margin-top: 2rem;
@@ -340,120 +331,77 @@
 <body>
     <div class="app-wrapper">
         <header>
-            <h1>Calculadora de Rentabilidad</h1>
-            <div class="subtitle">
-                Proyección financiera interactiva para modelos de negocio. <br>
-                Datos base referenciados de <span class="mono">ROI - GTM-1.xlsx</span>.
-            </div>
+            <h1>Calculadora ROI Premium</h1>
+            <div class="subtitle">Compara hasta 3 modelos de negocio</div>
         </header>
         <main class="dashboard-grid">
-            <!-- Left Panel: Configuration -->
-            <aside class="panel">
-                <div class="panel-header">
-                    <h2>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 20h9"></path>
-                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                        </svg>
-                        Configuración
-                    </h2>
-                </div>
-                <div class="control-group">
-                    <label for="modelSelect">Modelo de Negocio</label>
-                    <select id="modelSelect"></select>
-                </div>
-                <div class="control-group">
-                    <label for="demandFactor">Factor de Demanda (0.3 - 2.0)</label>
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <input id="demandFactor" type="number" step="0.05" min="0.30" max="2.00" value="1.00">
-                        <span class="tag" title="Escenario"><span class="dot"></span>Escenario</span>
+            <!-- Left Panel: Models -->
+            <aside>
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Modelos a Comparar</h2>
+                        <button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;" onclick="resetAll()">Reiniciar</button>
                     </div>
-                    <small style="color:var(--text-muted); font-size:0.75rem; margin-top:6px; display:block;">1.0 =
-                        Base, 0.8 = Conservador, 1.2 = Agresivo</small>
-                </div>
-                <div class="controls-grid" id="controls">
-                    <!-- JS Injects inputs here -->
-                </div>
-                <div class="actions">
-                    <button id="resetBtn">Restaurar Valores por Defecto</button>
-                    <button id="copyBtn">Copiar Reporte a WhatsApp</button>
+                    <div id="models-list"></div>
+                    <button id="btn-add-model" class="btn-add" onclick="addModel()">+ Agregar Modelo (máx. 3)</button>
+                    
+                    <div class="action-grid">
+                        <button class="btn-primary btn-whatsapp" onclick="copyToWhatsapp()">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="margin-right:8px">
+                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/>
+                            </svg>
+                            WhatsApp
+                        </button>
+                        <button class="btn-primary btn-pdf" onclick="generatePDF()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:8px">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            PDF
+                        </button>
+                    </div>
                 </div>
             </aside>
-            <!-- Right Panel: Results & Viz -->
+            
+            <!-- Right Panel: Results -->
             <section>
-                <!-- KPIs -->
-                <div class="kpi-row">
-                    <div class="kpi-card">
-                        <div class="kpi-val" id="kpiSales">$0</div>
-                        <div class="kpi-lbl">Ventas / Margen</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-val" id="kpiCosts">$0</div>
-                        <div class="kpi-lbl">Costos Fijos</div>
-                    </div>
-                    <div class="kpi-card highlight">
-                        <div class="kpi-val" style="color:var(--success)" id="kpiProfit">$0</div>
-                        <div class="kpi-lbl">Utilidad Mensual</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-val" id="kpiPayback">—</div>
-                        <div class="kpi-lbl">Recuperación</div>
-                    </div>
+                <div class="table-container">
+                    <table id="results-table"></table>
                 </div>
-                <!-- Insight Banner -->
-                <div class="risk-banner" id="riskBanner">
-                    <div style="background:rgba(255,255,255,0.2); padding:8px; border-radius:50%">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                            <polyline points="13 2 13 9 20 9"></polyline>
-                        </svg>
-                    </div>
-                    <div class="risk-content">
-                        <strong id="insightTitle">Analizando...</strong>
-                        <p id="insightBody">Ajusta los valores para ver el análisis.</p>
-                    </div>
-                </div>
-                <!-- Charts -->
+                
                 <div class="charts-container">
                     <div class="panel chart-box">
-                        <div class="panel-header" style="border:none; padding:0 0 10px; margin:0;">
-                            <h2 style="font-size:0.9rem; color:var(--text-muted)">Flujo de Efectivo Acumulado</h2>
-                            <div class="tag"><span class="dot"></span> Proyección 24 meses</div>
-                        </div>
-                        <canvas id="cashChart"></canvas>
+                        <h3 style="margin:0 0 1rem; font-size:0.9rem; color:var(--text-muted)">Comparación de Utilidad Mensual</h3>
+                        <canvas id="profitChart"></canvas>
                     </div>
                     <div class="panel chart-box">
-                        <div class="panel-header" style="border:none; padding:0 0 10px; margin:0;">
-                            <h2 style="font-size:0.9rem; color:var(--text-muted)">Retorno Anual</h2>
-                            <div class="tag"><span class="dot purple"></span> ROI %</div>
-                        </div>
-                        <canvas id="roiChart"></canvas>
+                        <h3 style="margin:0 0 1rem; font-size:0.9rem; color:var(--text-muted)">Tiempo de Recuperación</h3>
+                        <canvas id="paybackChart"></canvas>
                     </div>
                 </div>
+                
                 <div class="disclaimer">
-                    * Nota: En modelos "Ventana Limpieza" y "Croquetas/Granos/Café", la calculadora usa (Ganancia/u × Volumen) como Ventas Mensuales.
+                    * Comparación de modelos de negocio. Los resultados son estimados.
                 </div>
             </section>
         </main>
     </div>
+
     <script>
-        /* 
-           LOGIC PRESERVED 100% 
-           Only colors in Chart config updated for Dark Theme
-        */
         const MODELS = {
             // VENDINGS
             "vending_hielo": { "inv": 255000, "price_ice": 25, "loads_m": 750, "luz": 3150, "agua": 1575, "mnt": 525, "renta": 0 },
             "vending_agua": { "inv": 119000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 0 },
-            "vending_croquetas": { "inv": 95000, "gain_unit": 20, "kg_day": 50, "days": 30, "price_sale": 50, "luz": 800, "agua": 400, "mnt": 300, "renta": 3000 },
+            "vending_croquetas": { "inv": 95000, "gain_unit": 20, "kg_day": 50, "days": 30, "luz": 800, "agua": 400, "mnt": 300, "renta": 3000 },
             // VENTANAS/KIOSKOS
             "kiosko_agua": { "inv": 79000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 5000 },
             "kiosko_duo": { "inv": 244000, "price_ice": 25, "loads_m": 750, "price_gar": 15, "gar_m": 1500, "luz": 4950, "agua": 2475, "mnt": 825, "renta": 5000 },
-            "v_limpieza_6": { "inv": 49000, "gain_unit": 8, "lit_day": 150, "days": 30, "price_sale": 25, "luz": 500, "agua": 800, "mnt": 200, "renta": 2000 },
-            "v_limpieza_12": { "inv": 88000, "gain_unit": 8, "lit_day": 300, "days": 30, "price_sale": 25, "luz": 900, "agua": 1200, "mnt": 350, "renta": 2500 },
-            "v_croquetas": { "inv": 79000, "gain_unit": 15, "kg_day": 40, "days": 30, "price_sale": 40, "luz": 600, "agua": 300, "mnt": 250, "renta": 2500 },
+            "v_limpieza_6": { "inv": 49000, "gain_unit": 8, "lit_day": 150, "days": 30, "luz": 500, "agua": 800, "mnt": 200, "renta": 2000 },
+            "v_limpieza_12": { "inv": 88000, "gain_unit": 8, "lit_day": 300, "days": 30, "luz": 900, "agua": 1200, "mnt": 350, "renta": 2500 },
+            "v_croquetas": { "inv": 79000, "gain_unit": 15, "kg_day": 40, "days": 30, "luz": 600, "agua": 300, "mnt": 250, "renta": 2500 },
             "v_hielo": { "inv": 217000, "price_ice": 25, "loads_m": 750, "luz": 3150, "agua": 1575, "mnt": 525, "renta": 0 }
         };
         
@@ -473,396 +421,374 @@
             "Vendings": ["vending_hielo", "vending_agua", "vending_croquetas"],
             "Ventanas/Kioskos": ["kiosko_agua", "kiosko_duo", "v_limpieza_6", "v_limpieza_12", "v_croquetas", "v_hielo"]
         };
+
+        const COLORS = ['#3b82f6', '#f59e0b', '#10b981'];
+        
+        let appState = [];
         
         const fmtMoney = (n) => {
             if (!isFinite(n)) return "—";
             return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
         };
-        const fmtNum = (n, d = 2) => {
+        
+        const fmtNum = (n, d = 1) => {
             if (!isFinite(n)) return "—";
             return new Intl.NumberFormat("es-MX", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
         };
+
         function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
-        let state = {
-            modelId: Object.keys(MODELS)[0],
-            demandFactor: 1.0,
-            inputs: deepCopy(MODELS[Object.keys(MODELS)[0]])
-        };
-        const inputSchema = {
-            vending_hielo: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["price_ice", "Precio bolsa 5kg (MXN)", 0, 200, 1],
-                ["loads_m", "Bolsas / mes (base)", 0, 10000, 10],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            vending_agua: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
-                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            vending_croquetas: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["gain_unit", "Margen por kg (MXN)", 0, 300, 1],
-                ["kg_day", "Kg / día (base)", 0, 2000, 1],
-                ["days", "Días operativos / mes", 1, 31, 1],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            kiosko_agua: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
-                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            kiosko_duo: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["price_ice", "Precio bolsa Ice (MXN)", 0, 200, 1],
-                ["loads_m", "Bolsas / mes (base)", 0, 10000, 10],
-                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
-                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            v_limpieza_6: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["gain_unit", "Margen por litro (MXN)", 0, 200, 1],
-                ["lit_day", "Litros / día (base)", 0, 5000, 5],
-                ["days", "Días operativos / mes", 1, 31, 1],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            v_limpieza_12: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["gain_unit", "Margen por litro (MXN)", 0, 200, 1],
-                ["lit_day", "Litros / día (base)", 0, 5000, 5],
-                ["days", "Días operativos / mes", 1, 31, 1],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            v_croquetas: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["gain_unit", "Margen por kg (MXN)", 0, 300, 1],
-                ["kg_day", "Kg / día (base)", 0, 2000, 1],
-                ["days", "Días operativos / mes", 1, 31, 1],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            v_hielo: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["price_ice", "Precio bolsa 5kg (MXN)", 0, 200, 1],
-                ["loads_m", "Bolsas / mes (base)", 0, 10000, 10],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-        };
-        function calc(modelId, inputs, demandFactor) {
+
+        function calc(modelId, inputs) {
             const x = inputs;
-            const df = demandFactor;
             let inv = +x.inv || 0;
             let sales = 0;
             let fixed = 0;
             let profit = 0;
+            
             if (modelId === "kiosko_duo") {
-                const loads = (+x.loads_m || 0) * df;
-                const gars = (+x.gar_m || 0) * df;
+                const loads = (+x.loads_m || 0);
+                const gars = (+x.gar_m || 0);
                 sales = (+x.price_ice || 0) * loads + (+x.price_gar || 0) * gars;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
-            } else if (modelId === "kiosko_agua") {
-                const gars = (+x.gar_m || 0) * df;
-                sales = (+x.price_gar || 0) * gars;
-                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
-                profit = sales - fixed;
-            } else if (modelId === "vending_agua") {
-                const gars = (+x.gar_m || 0) * df;
+            } else if (modelId === "kiosko_agua" || modelId === "vending_agua") {
+                const gars = (+x.gar_m || 0);
                 sales = (+x.price_gar || 0) * gars;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
             } else if (modelId === "v_limpieza_6" || modelId === "v_limpieza_12") {
-                const litrosMes = (+x.lit_day || 0) * (+x.days || 30) * df;
+                const litrosMes = (+x.lit_day || 0) * (+x.days || 30);
                 sales = (+x.gain_unit || 0) * litrosMes;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
             } else if (modelId === "v_croquetas" || modelId === "vending_croquetas") {
-                const kgMes = (+x.kg_day || 0) * (+x.days || 30) * df;
+                const kgMes = (+x.kg_day || 0) * (+x.days || 30);
                 sales = (+x.gain_unit || 0) * kgMes;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
             } else if (modelId === "vending_hielo" || modelId === "v_hielo") {
-                const loads = (+x.loads_m || 0) * df;
+                const loads = (+x.loads_m || 0);
                 sales = (+x.price_ice || 0) * loads;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
             }
+            
             const payback = (profit > 0 && inv > 0) ? inv / profit : Infinity;
-            const roiAnnual = (inv > 0) ? (profit * 12) / inv : Infinity;
+            const roiAnnual = (inv > 0) ? (profit * 12) / inv : 0;
+            
             return { inv, sales, fixed, profit, payback, roiAnnual };
         }
-        function paybackLabel(m) {
-            if (!isFinite(m)) return "∞";
-            if (m < 0) return "Nunca";
-            return `${fmtNum(m, 1)} meses`;
-        }
-        function insight(metrics) {
-            const { profit, payback, roiAnnual } = metrics;
-            // Visual tweaks for risk banner
-            const banner = document.getElementById("riskBanner");
-            banner.className = "risk-banner";
-            if (!isFinite(payback) || profit <= 0) {
-                banner.classList.add("danger");
-                return {
-                    title: "Alerta: Flujo Negativo",
-                    body: "Con estos parámetros el modelo no genera utilidades. Intenta subir la demanda o reducir costos fijos."
-                };
+
+        function addModel() {
+            if (appState.length >= 3) {
+                alert("Máximo 3 modelos permitidos");
+                return;
             }
-            let speed = payback <= 6 ? "Rápida" : (payback <= 12 ? "Media" : "Lenta");
-            let roiTxt = roiAnnual >= 2 ? "Excelentes" : (roiAnnual >= 1 ? "Buenos" : "Moderados");
-            if (roiAnnual < 0.5) banner.classList.add("warning");
-            return {
-                title: `Recuperación ${speed}`,
-                body: `Generas ${fmtMoney(profit)} libres al mes. Recuperas tu inversión en ${fmtNum(payback, 1)} meses. Rendimientos ${roiTxt} (${fmtNum(roiAnnual * 100, 0)}% anual).`
-            };
-        }
-        const modelSelect = document.getElementById("modelSelect");
-        const controls = document.getElementById("controls");
-        const demandFactorInput = document.getElementById("demandFactor");
-        function buildModelOptions() {
-            modelSelect.innerHTML = "";
             
-            // Create Vendings optgroup
-            const vendingsGroup = document.createElement("optgroup");
-            vendingsGroup.label = "Vendings";
-            MODEL_CATEGORIES["Vendings"].forEach(id => {
-                const opt = document.createElement("option");
-                opt.value = id;
-                opt.textContent = MODEL_NAMES[id] || id;
-                vendingsGroup.appendChild(opt);
+            const firstModel = Object.keys(MODELS)[0];
+            appState.push({
+                id: Date.now(),
+                type: firstModel,
+                inputs: deepCopy(MODELS[firstModel])
             });
-            modelSelect.appendChild(vendingsGroup);
             
-            // Create Ventanas/Kioskos optgroup
-            const ventanasGroup = document.createElement("optgroup");
-            ventanasGroup.label = "Ventanas/Kioskos";
-            MODEL_CATEGORIES["Ventanas/Kioskos"].forEach(id => {
-                const opt = document.createElement("option");
-                opt.value = id;
-                opt.textContent = MODEL_NAMES[id] || id;
-                ventanasGroup.appendChild(opt);
-            });
-            modelSelect.appendChild(ventanasGroup);
+            renderModels();
+            updateResults();
         }
-        function buildControls() {
-            controls.innerHTML = "";
-            const schema = inputSchema[state.modelId] || [];
-            schema.forEach(([key, label, min, max, step]) => {
-                const wrapper = document.createElement("div");
-                wrapper.className = "control-group";
-                wrapper.style.marginBottom = "0";
-                wrapper.innerHTML = `<label>${label}</label>`;
-                const inp = document.createElement("input");
-                inp.type = "number";
-                inp.step = step;
-                inp.min = min;
-                inp.max = max;
-                inp.value = (state.inputs[key] ?? 0);
-                inp.addEventListener("input", () => {
-                    state.inputs[key] = +inp.value;
-                    render();
+
+        function removeModel(id) {
+            if (appState.length <= 1) {
+                alert("Debe haber al menos un modelo");
+                return;
+            }
+            appState = appState.filter(m => m.id !== id);
+            renderModels();
+            updateResults();
+        }
+
+        function updateModelType(id, newType) {
+            const model = appState.find(m => m.id === id);
+            model.type = newType;
+            model.inputs = deepCopy(MODELS[newType]);
+            renderModels();
+            updateResults();
+        }
+
+        function updateInput(id, key, value) {
+            const model = appState.find(m => m.id === id);
+            model.inputs[key] = parseFloat(value) || 0;
+            updateResults();
+        }
+
+        function renderModels() {
+            const container = document.getElementById('models-list');
+            container.innerHTML = '';
+            
+            appState.forEach((model, idx) => {
+                const card = document.createElement('div');
+                card.className = `model-card model-color-${idx}`;
+                
+                // Build select options with optgroups
+                let selectHTML = `<select onchange="updateModelType(${model.id}, this.value)" style="width:100%; margin-bottom:0.75rem;">`;
+                
+                // Vendings group
+                selectHTML += `<optgroup label="Vendings">`;
+                MODEL_CATEGORIES["Vendings"].forEach(id => {
+                    selectHTML += `<option value="${id}" ${model.type === id ? 'selected' : ''}>${MODEL_NAMES[id]}</option>`;
                 });
-                wrapper.appendChild(inp);
-                controls.appendChild(wrapper);
+                selectHTML += `</optgroup>`;
+                
+                // Ventanas/Kioskos group
+                selectHTML += `<optgroup label="Ventanas/Kioskos">`;
+                MODEL_CATEGORIES["Ventanas/Kioskos"].forEach(id => {
+                    selectHTML += `<option value="${id}" ${model.type === id ? 'selected' : ''}>${MODEL_NAMES[id]}</option>`;
+                });
+                selectHTML += `</optgroup></select>`;
+                
+                // Build inputs
+                let inputsHTML = '<div class="controls-grid">';
+                const inputs = model.inputs;
+                for (let key in inputs) {
+                    if (key === 'inv') continue; // Skip investment in inputs
+                    inputsHTML += `
+                        <div class="control-group">
+                            <label style="font-size:0.75rem;">${getLabel(key)}</label>
+                            <input type="number" value="${inputs[key]}" 
+                                onchange="updateInput(${model.id}, '${key}', this.value)"
+                                style="padding:0.4rem 0.6rem; font-size:0.85rem;">
+                        </div>
+                    `;
+                }
+                inputsHTML += '</div>';
+                
+                card.innerHTML = `
+                    <div class="model-header">
+                        <span class="model-title" style="color:${COLORS[idx]}">Modelo ${idx + 1}</span>
+                        ${appState.length > 1 ? `<button class="btn-remove" onclick="removeModel(${model.id})">✕</button>` : ''}
+                    </div>
+                    ${selectHTML}
+                    ${inputsHTML}
+                `;
+                
+                container.appendChild(card);
             });
+            
+            // Update add button state
+            const addBtn = document.getElementById('btn-add-model');
+            addBtn.disabled = appState.length >= 3;
+            addBtn.textContent = appState.length >= 3 ? 'Máximo 3 modelos' : '+ Agregar Modelo';
         }
-        let cashChart, roiChart;
+
+        function getLabel(key) {
+            const labels = {
+                price_ice: "Precio hielo",
+                loads_m: "Bolsas/mes",
+                price_gar: "Precio garrafón",
+                gar_m: "Garrafones/mes",
+                luz: "Luz",
+                agua: "Agua",
+                mnt: "Mantenimiento",
+                renta: "Renta",
+                gain_unit: "Ganancia/unit",
+                lit_day: "Litros/día",
+                kg_day: "Kg/día",
+                days: "Días/mes"
+            };
+            return labels[key] || key;
+        }
+
+        function updateResults() {
+            const results = appState.map(m => calc(m.type, m.inputs));
+            
+            // Update table
+            const table = document.getElementById('results-table');
+            let html = `
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        ${appState.map((m, i) => `<th style="color:${COLORS[i]}">${MODEL_NAMES[m.type]}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Inversión</td>
+                        ${results.map(r => `<td>${fmtMoney(r.inv)}</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td>Ventas Mensuales</td>
+                        ${results.map(r => `<td>${fmtMoney(r.sales)}</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td>Costos Fijos</td>
+                        ${results.map(r => `<td>${fmtMoney(r.fixed)}</td>`).join('')}
+                    </tr>
+                    <tr style="font-weight:600; background:rgba(16,185,129,0.1)">
+                        <td>Utilidad Mensual</td>
+                        ${results.map(r => `<td style="color:var(--success)">${fmtMoney(r.profit)}</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td>Recuperación (meses)</td>
+                        ${results.map(r => `<td>${r.payback === Infinity ? '∞' : fmtNum(r.payback)}</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td>ROI Anual</td>
+                        ${results.map(r => `<td>${fmtNum(r.roiAnnual * 100, 0)}%</td>`).join('')}
+                    </tr>
+                </tbody>
+            `;
+            table.innerHTML = html;
+            
+            // Update charts
+            updateCharts(results);
+        }
+
+        let profitChart, paybackChart;
+
         function initCharts() {
-            const ctx1 = document.getElementById("cashChart").getContext("2d");
-            const ctx2 = document.getElementById("roiChart").getContext("2d");
-            // Premium Dark Theme Colors
-            const gridColor = "rgba(255,255,255,0.05)";
-            const textColor = "#94a3b8";
-            // Gradient for Line Chart
-            let gradient = ctx1.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
-            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
-            cashChart = new Chart(ctx1, {
-                type: "line",
+            const ctx1 = document.getElementById('profitChart').getContext('2d');
+            const ctx2 = document.getElementById('paybackChart').getContext('2d');
+            
+            profitChart = new Chart(ctx1, {
+                type: 'bar',
                 data: {
                     labels: [],
-                    datasets: [
-                        {
-                            label: "Flujo acumulado",
-                            data: [],
-                            borderColor: "#3b82f6",
-                            backgroundColor: gradient,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            pointHoverRadius: 6
-                        },
-                        {
-                            label: "Inversión Inicial",
-                            data: [],
-                            borderColor: "#ef4444",
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            borderWidth: 1
-                        },
-                    ]
+                    datasets: [{
+                        label: 'Utilidad Mensual',
+                        data: [],
+                        backgroundColor: COLORS
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
-                    aspectRatio: 2,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { labels: { color: textColor, font: { family: 'Inter' } } },
-                        tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#f8fafc',
-                            bodyColor: '#cbd5e1',
-                            borderColor: 'rgba(255,255,255,0.1)',
-                            borderWidth: 1,
-                            padding: 10
-                        }
-                    },
-                    scales: {
-                        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Inter' } } },
-                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Inter' } } }
-                    },
-                    layout: {
-                        padding: 10
-                    }
-                }
-            });
-            roiChart = new Chart(ctx2, {
-                type: "bar",
-                data: {
-                    labels: ["ROI Anual Estimado"],
-                    datasets: [
-                        {
-                            label: "ROI",
-                            data: [0],
-                            backgroundColor: "#a78bfa",
-                            hoverBackgroundColor: "#8b5cf6",
-                            borderRadius: 6
-                        },
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.2,
+                    aspectRatio: 1.5,
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#f8fafc',
                             callbacks: {
-                                label: (ctx) => `Rendimiento: ${fmtNum(ctx.parsed.y * 100, 0)}%`
+                                label: (ctx) => fmtMoney(ctx.raw)
                             }
                         }
                     },
                     scales: {
-                        x: { display: false },
                         y: {
-                            grid: { color: gridColor },
-                            ticks: { color: textColor, font: { family: 'Inter' }, callback: (v) => (v * 100).toFixed(0) + "%" },
-                            suggestedMax: 2
+                            ticks: {
+                                callback: (v) => '$' + (v/1000).toFixed(0) + 'k'
+                            }
                         }
+                    }
+                }
+            });
+            
+            paybackChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Meses',
+                        data: [],
+                        backgroundColor: COLORS
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1,
+                    plugins: {
+                        legend: { display: false }
                     },
-                    layout: {
-                        padding: 10
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: (v) => v + ' meses'
+                            }
+                        }
                     }
                 }
             });
         }
-        function updateCharts(metrics) {
-            const months = 24;
-            const labels = Array.from({ length: months }, (_, i) => `Mes ${i + 1}`);
-            let acc = 0;
-            const series = [];
-            for (let i = 1; i <= months; i++) {
-                acc += metrics.profit;
-                series.push(acc);
-            }
-            cashChart.data.labels = labels;
-            cashChart.data.datasets[0].data = series;
-            cashChart.data.datasets[1].data = labels.map(_ => metrics.inv);
-            cashChart.update();
-            roiChart.data.datasets[0].data = [metrics.roiAnnual];
-            roiChart.options.scales.y.suggestedMax = Math.max(2, metrics.roiAnnual * 1.2);
-            roiChart.update();
+
+        function updateCharts(results) {
+            const labels = appState.map(m => MODEL_NAMES[m.type]);
+            const profits = results.map(r => r.profit);
+            const paybacks = results.map(r => r.payback === Infinity ? 0 : r.payback);
+            
+            profitChart.data.labels = labels;
+            profitChart.data.datasets[0].data = profits;
+            profitChart.update();
+            
+            paybackChart.data.labels = labels;
+            paybackChart.data.datasets[0].data = paybacks;
+            paybackChart.update();
         }
-        function render() {
-            const metrics = calc(state.modelId, state.inputs, state.demandFactor);
-            document.getElementById("kpiSales").textContent = fmtMoney(metrics.sales);
-            document.getElementById("kpiCosts").textContent = fmtMoney(metrics.fixed);
-            document.getElementById("kpiProfit").textContent = fmtMoney(metrics.profit);
-            document.getElementById("kpiPayback").textContent = paybackLabel(metrics.payback);
-            const ins = insight(metrics);
-            document.getElementById("insightTitle").textContent = ins.title;
-            document.getElementById("insightBody").textContent = ins.body;
-            updateCharts(metrics);
+
+        function resetAll() {
+            appState = [];
+            addModel();
         }
-        function setModel(id) {
-            state.modelId = id;
-            state.inputs = deepCopy(MODELS[id]);
-            buildControls();
-            render();
+
+        function copyToWhatsapp() {
+            const results = appState.map(m => calc(m.type, m.inputs));
+            let text = "*Reporte ROI - Comparación de Modelos*\n\n";
+            
+            appState.forEach((m, i) => {
+                const r = results[i];
+                text += `*${MODEL_NAMES[m.type]}*\n`;
+                text += `💰 Inversión: ${fmtMoney(r.inv)}\n`;
+                text += `📈 Ventas: ${fmtMoney(r.sales)}\n`;
+                text += `✅ Utilidad: ${fmtMoney(r.profit)}\n`;
+                text += `🗓️ Recuperación: ${r.payback === Infinity ? '∞' : fmtNum(r.payback) + ' meses'}\n`;
+                text += `🚀 ROI: ${fmtNum(r.roiAnnual * 100, 0)}%\n\n`;
+            });
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copiado al portapapeles");
+            });
         }
-        modelSelect.addEventListener("change", (e) => setModel(e.target.value));
-        demandFactorInput.addEventListener("input", (e) => {
-            state.demandFactor = Math.max(0.3, Math.min(2.0, +e.target.value || 1));
-            render();
-        });
-        document.getElementById("resetBtn").addEventListener("click", () => {
-            state.inputs = deepCopy(MODELS[state.modelId]);
-            state.demandFactor = 1.0;
-            demandFactorInput.value = "1.00";
-            buildControls();
-            render();
-        });
-        document.getElementById("copyBtn").addEventListener("click", async () => {
-            const m = calc(state.modelId, state.inputs, state.demandFactor);
-            const text = `*Reporte ROI - ${MODEL_NAMES[state.modelId]}*\n\n` +
-                `💰 Inversión: ${fmtMoney(m.inv)}\n` +
-                `📈 Ventas/Margen: ${fmtMoney(m.sales)}\n` +
-                `📉 Costos Fijos: ${fmtMoney(m.fixed)}\n` +
-                `✅ *Utilidad Mensual: ${fmtMoney(m.profit)}*\n` +
-                `🗓️ Recuperación: ${paybackLabel(m.payback)}\n` +
-                `🚀 ROI Anual: ${fmtNum(m.roiAnnual * 100, 0)}%`;
-            try {
-                await navigator.clipboard.writeText(text);
-                alert("Copiado al portapapeles. Listo para WhatsApp.");
-            } catch {
-                prompt("Copia este texto:", text);
-            }
-        });
-        buildModelOptions();
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Title
+            doc.setFontSize(20);
+            doc.text("Reporte ROI - Comparación de Modelos", 20, 20);
+            
+            // Date
+            doc.setFontSize(10);
+            doc.text("Fecha: " + new Date().toLocaleDateString('es-MX'), 20, 30);
+            
+            const results = appState.map(m => calc(m.type, m.inputs));
+            let y = 50;
+            
+            appState.forEach((m, i) => {
+                const r = results[i];
+                
+                doc.setFontSize(14);
+                doc.text(MODEL_NAMES[m.type], 20, y);
+                y += 10;
+                
+                doc.setFontSize(11);
+                doc.text(`Inversión: ${fmtMoney(r.inv)}`, 20, y);
+                y += 7;
+                doc.text(`Ventas Mensuales: ${fmtMoney(r.sales)}`, 20, y);
+                y += 7;
+                doc.text(`Costos Fijos: ${fmtMoney(r.fixed)}`, 20, y);
+                y += 7;
+                doc.text(`Utilidad Mensual: ${fmtMoney(r.profit)}`, 20, y);
+                y += 7;
+                doc.text(`Recuperación: ${r.payback === Infinity ? 'N/A' : fmtNum(r.payback) + ' meses'}`, 20, y);
+                y += 7;
+                doc.text(`ROI Anual: ${fmtNum(r.roiAnnual * 100, 0)}%`, 20, y);
+                y += 15;
+            });
+            
+            doc.save("reporte-roi.pdf");
+        }
+
+        // Initialize
+        addModel();
         initCharts();
-        setModel(state.modelId);
     </script>
 </body>
 </html>
