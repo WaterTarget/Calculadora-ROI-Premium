@@ -3,90 +3,104 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>ROI Calculator | Kioskos & Vending</title>
+    <title>Calculadora ROI Premium | Suma de Modelos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --bg: #020408;
-            --surface: #0f1218;
-            --surface-highlight: #1a1e26;
-            --border: #272b36;
+            --bg: #0a0e1a;
+            --surface: #111827;
+            --surface-light: #1f2937;
+            --border: #374151;
             --primary: #3b82f6;
-            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --primary-light: #60a5fa;
+            --accent: #8b5cf6;
+            --text-main: #f9fafb;
+            --text-secondary: #9ca3af;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --radius: 12px;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.15);
         }
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            margin: 0;
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
+            background: var(--bg);
             color: var(--text-main);
-            line-height: 1.5;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            line-height: 1.6;
         }
-        /* Layout & Container */
-        .app-wrapper {
+        .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem 1.5rem;
-            width: 100%;
+            padding: 2rem;
         }
-        header {
-            margin-bottom: 2.5rem;
+        /* Header Premium */
+        .header {
             text-align: center;
+            padding: 3rem 0;
+            position: relative;
         }
-        h1 {
-            font-size: clamp(1.8rem, 4vw, 2.5rem);
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            margin: 0 0 0.75rem;
-            background: var(--primary-gradient);
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 0.5rem;
+            position: relative;
         }
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 1rem;
-            max-width: 60ch;
-            margin: 0 auto;
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
         }
-        /* Main Grid */
-        .dashboard-grid {
+        /* Main Layout */
+        .main-grid {
             display: grid;
-            grid-template-columns: 400px 1fr;
+            grid-template-columns: 420px 1fr;
             gap: 2rem;
-            align-items: start;
         }
         @media (max-width: 1024px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
+            .main-grid { grid-template-columns: 1fr; }
         }
-        /* Panels & Cards */
-        .panel {
+        /* Cards */
+        .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 16px;
             padding: 1.5rem;
             box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
         }
-        .panel-header {
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+        .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -94,701 +108,820 @@
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--border);
         }
-        .panel h2 {
-            margin: 0;
+        .card-title {
             font-size: 1.1rem;
             font-weight: 600;
-            color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         /* Model Cards */
-        .model-card {
-            background: var(--surface-highlight);
+        .model-item {
+            background: var(--surface-light);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
+            border-radius: 12px;
+            padding: 1.25rem;
             margin-bottom: 1rem;
             position: relative;
+            transition: all 0.3s ease;
         }
-        .model-card.model-color-0 { border-left: 3px solid #3b82f6; }
-        .model-card.model-color-1 { border-left: 3px solid #f59e0b; }
-        .model-card.model-color-2 { border-left: 3px solid #10b981; }
+        .model-item:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+        }
+        .model-item.model-1 { border-left: 3px solid #3b82f6; }
+        .model-item.model-2 { border-left: 3px solid #f59e0b; }
+        .model-item.model-3 { border-left: 3px solid #10b981; }
         .model-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.75rem;
-        }
-        .model-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .btn-remove {
-            background: transparent;
-            border: none;
-            color: var(--danger);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0;
-            width: auto;
-        }
-        /* Controls Section */
-        .control-group {
             margin-bottom: 1rem;
         }
-        label {
+        .model-number {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .model-1 .model-number { color: #3b82f6; }
+        .model-2 .model-number { color: #f59e0b; }
+        .model-3 .model-number { color: #10b981; }
+        .btn-icon {
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: var(--danger);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background: var(--danger);
+            color: white;
+        }
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
             display: block;
             font-size: 0.8rem;
             font-weight: 500;
-            color: var(--text-muted);
-            margin-bottom: 0.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
         }
-        select,
-        input[type="number"] {
+        .form-select, .form-input {
             width: 100%;
             background: var(--bg);
             border: 1px solid var(--border);
             color: var(--text-main);
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: all 0.2s ease;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .form-select:focus, .form-input:focus {
             outline: none;
-        }
-        select:hover,
-        input[type="number"]:hover {
-            border-color: #4b5563;
-        }
-        select:focus,
-        input[type="number"]:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
-        select optgroup {
-            background: var(--surface-highlight);
-            color: var(--text-main);
-            font-weight: 600;
-        }
-        select option {
-            background: var(--surface);
-            color: var(--text-main);
-        }
-        .controls-grid {
+        .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.75rem;
         }
         /* Buttons */
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
         .btn-add {
             width: 100%;
-            padding: 0.75rem;
             background: transparent;
             border: 2px dashed var(--border);
-            color: var(--text-muted);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
         }
-        .btn-add:hover {
+        .btn-add:hover:not(:disabled) {
             border-color: var(--primary);
             color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
         }
         .btn-add:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        .action-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
-        }
-        .btn-primary {
-            padding: 0.85rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
         .btn-whatsapp {
             background: #25d366;
             color: white;
+            flex: 1;
         }
         .btn-whatsapp:hover {
             background: #128c7e;
+            transform: translateY(-2px);
         }
         .btn-pdf {
-            background: #ef4444;
+            background: var(--danger);
             color: white;
+            flex: 1;
         }
         .btn-pdf:hover {
             background: #dc2626;
+            transform: translateY(-2px);
+        }
+        .btn-reset {
+            background: var(--surface-light);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+        .btn-reset:hover {
+            color: var(--text-main);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
         /* Results Section */
-        .kpi-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
-        @media (max-width: 768px) {
-            .kpi-row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        .kpi-card {
-            background: var(--surface-highlight);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            padding: 1.25rem;
-            border-radius: 12px;
+        /* Total Card - Highlighted */
+        .total-card {
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            padding: 2rem;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .kpi-card::before {
+        .total-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--primary-gradient);
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
         }
-        .kpi-val {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 0.25rem;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
         }
-        .kpi-lbl {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
+        .total-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+            position: relative;
         }
-        /* Table */
-        .table-container {
+        .total-value {
+            font-size: 3rem;
+            font-weight: 800;
+            position: relative;
+        }
+        /* Tables */
+        .table-wrapper {
             background: var(--surface);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table-header {
+            background: var(--surface-light);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.95rem;
         }
         table {
             width: 100%;
             border-collapse: collapse;
         }
         th, td {
-            padding: 12px;
+            padding: 1rem 1.5rem;
             text-align: left;
             border-bottom: 1px solid var(--border);
         }
         th {
-            color: var(--text-muted);
-            font-weight: 500;
+            background: rgba(255,255,255,0.02);
+            font-weight: 600;
+            color: var(--text-secondary);
             font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        /* Charts */
-        .charts-container {
+        tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        .text-right { text-align: right; }
+        .highlight-positive { color: var(--success); font-weight: 600; }
+        .highlight-negative { color: var(--danger); }
+        /* Charts Grid */
+        .charts-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
         }
-        @media (max-width: 800px) {
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
         }
-        .chart-box {
-            background: var(--surface-highlight);
-            border-radius: var(--radius);
-            padding: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.02);
-            min-height: 280px;
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: 320px;
+        }
+        .chart-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+        /* Legend */
+        .legend {
             display: flex;
-            flex-direction: column;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
         }
-        .chart-box canvas {
-            flex: 1;
-            max-height: 240px;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
         }
-        .disclaimer {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-            font-size: 0.8rem;
-            color: #526075;
-            text-align: center;
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
-    <div class="app-wrapper">
-        <header>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
             <h1>Calculadora ROI Premium</h1>
-            <div class="subtitle">Compara hasta 3 modelos de negocio</div>
+            <p>Suma hasta 3 modelos de negocio y visualiza resultados individuales y totales</p>
         </header>
-        <main class="dashboard-grid">
+
+        <div class="main-grid">
             <!-- Left Panel: Models -->
-            <aside>
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>Modelos a Comparar</h2>
-                        <button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;" onclick="resetAll()">Reiniciar</button>
+            <div class="models-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                            Modelos
+                        </div>
+                        <button class="btn-reset" onclick="resetAll()">Reiniciar</button>
                     </div>
-                    <div id="models-list"></div>
-                    <button id="btn-add-model" class="btn-add" onclick="addModel()">+ Agregar Modelo (máx. 3)</button>
                     
-                    <div class="action-grid">
-                        <button class="btn-primary btn-whatsapp" onclick="copyToWhatsapp()">
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="margin-right:8px">
-                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/>
+                    <div id="models-container"></div>
+                    
+                    <button id="btn-add" class="btn btn-add" onclick="addModel()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Agregar Modelo (Máx. 3)
+                    </button>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-whatsapp" onclick="exportToWhatsapp()">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326z"/>
                             </svg>
                             WhatsApp
                         </button>
-                        <button class="btn-primary btn-pdf" onclick="generatePDF()">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:8px">
+                        <button class="btn btn-pdf" onclick="generatePDF()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                 <polyline points="14 2 14 8 20 8"></polyline>
                                 <line x1="16" y1="13" x2="8" y2="13"></line>
                                 <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10 9 9 9 8 9"></polyline>
                             </svg>
                             PDF
                         </button>
                     </div>
                 </div>
-            </aside>
-            
+            </div>
+
             <!-- Right Panel: Results -->
-            <section>
-                <div class="table-container">
-                    <table id="results-table"></table>
+            <div class="results-section" id="results-section">
+                <!-- Total Summary Card -->
+                <div class="total-card">
+                    <div class="total-label">UTILIDAD TOTAL MENSUAL</div>
+                    <div class="total-value" id="total-profit">$0</div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">
+                        Inversión Total: <span id="total-investment">$0</span> | 
+                        Recuperación: <span id="total-payback">-</span>
+                    </div>
                 </div>
-                
-                <div class="charts-container">
-                    <div class="panel chart-box">
-                        <h3 style="margin:0 0 1rem; font-size:0.9rem; color:var(--text-muted)">Comparación de Utilidad Mensual</h3>
+
+                <!-- Detailed Table -->
+                <div class="table-wrapper">
+                    <div class="table-header">Desglose por Modelo</div>
+                    <table id="details-table">
+                        <thead>
+                            <tr>
+                                <th>Modelo</th>
+                                <th class="text-right">Inversión</th>
+                                <th class="text-right">Ventas/Mes</th>
+                                <th class="text-right">Costos</th>
+                                <th class="text-right">Utilidad</th>
+                                <th class="text-right">Recup.</th>
+                                <th class="text-right">ROI Anual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body"></tbody>
+                        <tfoot id="table-footer" style="background: var(--surface-light); font-weight: 600;"></tfoot>
+                    </table>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">Comparación de Utilidad por Modelo</div>
                         <canvas id="profitChart"></canvas>
                     </div>
-                    <div class="panel chart-box">
-                        <h3 style="margin:0 0 1rem; font-size:0.9rem; color:var(--text-muted)">Tiempo de Recuperación</h3>
+                    <div class="chart-container">
+                        <div class="chart-title">Tiempo de Recuperación (Meses)</div>
                         <canvas id="paybackChart"></canvas>
                     </div>
                 </div>
-                
-                <div class="disclaimer">
-                    * Comparación de modelos de negocio. Los resultados son estimados.
-                </div>
-            </section>
-        </main>
+
+                <!-- Legend -->
+                <div class="legend" id="chart-legend"></div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const MODELS = {
+        // Machine Database
+        const MACHINES = {
             // VENDINGS
-            "vending_hielo": { "inv": 255000, "price_ice": 25, "loads_m": 750, "luz": 3150, "agua": 1575, "mnt": 525, "renta": 0 },
-            "vending_agua": { "inv": 119000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 0 },
-            "vending_croquetas": { "inv": 95000, "gain_unit": 20, "kg_day": 50, "days": 30, "luz": 800, "agua": 400, "mnt": 300, "renta": 3000 },
+            vending_hielo: { name: "Hielo", inv: 255000, price_ice: 25, loads_m: 750, luz: 3150, agua: 1575, mnt: 525, renta: 0 },
+            vending_agua: { name: "Agua", inv: 119000, price_gar: 15, gar_m: 1500, luz: 900, agua: 1800, mnt: 300, renta: 0 },
+            vending_croquetas: { name: "Croquetas, Café y Granos", inv: 95000, gain_unit: 20, kg_day: 50, days: 30, luz: 800, agua: 400, mnt: 300, renta: 3000 },
             // VENTANAS/KIOSKOS
-            "kiosko_agua": { "inv": 79000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 5000 },
-            "kiosko_duo": { "inv": 244000, "price_ice": 25, "loads_m": 750, "price_gar": 15, "gar_m": 1500, "luz": 4950, "agua": 2475, "mnt": 825, "renta": 5000 },
-            "v_limpieza_6": { "inv": 49000, "gain_unit": 8, "lit_day": 150, "days": 30, "luz": 500, "agua": 800, "mnt": 200, "renta": 2000 },
-            "v_limpieza_12": { "inv": 88000, "gain_unit": 8, "lit_day": 300, "days": 30, "luz": 900, "agua": 1200, "mnt": 350, "renta": 2500 },
-            "v_croquetas": { "inv": 79000, "gain_unit": 15, "kg_day": 40, "days": 30, "luz": 600, "agua": 300, "mnt": 250, "renta": 2500 },
-            "v_hielo": { "inv": 217000, "price_ice": 25, "loads_m": 750, "luz": 3150, "agua": 1575, "mnt": 525, "renta": 0 }
-        };
-        
-        const MODEL_NAMES = { 
-            "vending_hielo": "Hielo", 
-            "vending_agua": "Agua", 
-            "vending_croquetas": "Croquetas, Cafe y Granos",
-            "kiosko_agua": "Kiosko Agua", 
-            "kiosko_duo": "Kiosko Duo", 
-            "v_limpieza_6": "V. Limpieza 6", 
-            "v_limpieza_12": "V. Limpieza 12",
-            "v_croquetas": "V. Croquetas, Granos y Café",
-            "v_hielo": "V. Hielo"
+            kiosko_agua: { name: "Kiosko Agua", inv: 79000, price_gar: 15, gar_m: 1500, luz: 900, agua: 1800, mnt: 300, renta: 5000 },
+            kiosko_duo: { name: "Kiosko Duo", inv: 244000, price_ice: 25, loads_m: 750, price_gar: 15, gar_m: 1500, luz: 4950, agua: 2475, mnt: 825, renta: 5000 },
+            v_limpieza_6: { name: "V. Limpieza", inv: 49000, gain_unit: 8, lit_day: 150, days: 30, luz: 500, agua: 800, mnt: 200, renta: 2000 },
+            v_limpieza_12: { name: "V. Limpieza Plus", inv: 88000, gain_unit: 8, lit_day: 300, days: 30, luz: 900, agua: 1200, mnt: 350, renta: 2500 },
+            v_croquetas: { name: "V. Croquetas, Granos y Café", inv: 79000, gain_unit: 15, kg_day: 40, days: 30, luz: 600, agua: 300, mnt: 250, renta: 2500 },
+            v_hielo: { name: "V. Hielo", inv: 217000, price_ice: 25, loads_m: 750, luz: 3150, agua: 1575, mnt: 525, renta: 0 }
         };
 
-        const MODEL_CATEGORIES = {
+        const CATEGORIES = {
             "Vendings": ["vending_hielo", "vending_agua", "vending_croquetas"],
             "Ventanas/Kioskos": ["kiosko_agua", "kiosko_duo", "v_limpieza_6", "v_limpieza_12", "v_croquetas", "v_hielo"]
         };
 
         const COLORS = ['#3b82f6', '#f59e0b', '#10b981'];
-        
-        let appState = [];
-        
+        const LABELS = {
+            price_ice: "Precio hielo ($)", loads_m: "Bolsas/mes", price_gar: "Precio garrafón ($)",
+            gar_m: "Garrafones/mes", luz: "Luz ($)", agua: "Agua ($)", mnt: "Mantenimiento ($)",
+            renta: "Renta ($)", gain_unit: "Ganancia unitaria ($)", lit_day: "Litros/día",
+            kg_day: "Kg/día", days: "Días operativos"
+        };
+
+        let models = [];
+        let profitChart, paybackChart;
+
+        // Formatting
         const fmtMoney = (n) => {
-            if (!isFinite(n)) return "—";
+            if (!isFinite(n) || isNaN(n)) return "$0";
             return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
         };
-        
+
         const fmtNum = (n, d = 1) => {
-            if (!isFinite(n)) return "—";
-            return new Intl.NumberFormat("es-MX", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
+            if (!isFinite(n) || isNaN(n)) return "—";
+            return n.toFixed(d);
         };
 
-        function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+        // Deep copy
+        const deepCopy = (obj) => JSON.parse(JSON.stringify(obj));
 
-        function calc(modelId, inputs) {
+        // Calculate single model
+        function calculateModel(machineId, inputs) {
             const x = inputs;
-            let inv = +x.inv || 0;
-            let sales = 0;
-            let fixed = 0;
-            let profit = 0;
-            
-            if (modelId === "kiosko_duo") {
-                const loads = (+x.loads_m || 0);
-                const gars = (+x.gar_m || 0);
-                sales = (+x.price_ice || 0) * loads + (+x.price_gar || 0) * gars;
-                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
-                profit = sales - fixed;
-            } else if (modelId === "kiosko_agua" || modelId === "vending_agua") {
-                const gars = (+x.gar_m || 0);
-                sales = (+x.price_gar || 0) * gars;
-                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
-                profit = sales - fixed;
-            } else if (modelId === "v_limpieza_6" || modelId === "v_limpieza_12") {
-                const litrosMes = (+x.lit_day || 0) * (+x.days || 30);
-                sales = (+x.gain_unit || 0) * litrosMes;
-                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
-                profit = sales - fixed;
-            } else if (modelId === "v_croquetas" || modelId === "vending_croquetas") {
-                const kgMes = (+x.kg_day || 0) * (+x.days || 30);
-                sales = (+x.gain_unit || 0) * kgMes;
-                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
-                profit = sales - fixed;
-            } else if (modelId === "vending_hielo" || modelId === "v_hielo") {
-                const loads = (+x.loads_m || 0);
-                sales = (+x.price_ice || 0) * loads;
-                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
-                profit = sales - fixed;
+            let sales = 0, costs = 0;
+
+            if (machineId === 'kiosko_duo') {
+                sales = (x.price_ice * x.loads_m) + (x.price_gar * x.gar_m);
+                costs = x.luz + x.agua + x.mnt + x.renta;
+            } else if (machineId === 'kiosko_agua' || machineId === 'vending_agua') {
+                sales = x.price_gar * x.gar_m;
+                costs = x.luz + x.agua + x.mnt + x.renta;
+            } else if (machineId === 'vending_hielo' || machineId === 'v_hielo') {
+                sales = x.price_ice * x.loads_m;
+                costs = x.luz + x.agua + x.mnt + x.renta;
+            } else if (machineId === 'vending_croquetas' || machineId === 'v_croquetas') {
+                sales = x.gain_unit * x.kg_day * x.days;
+                costs = x.luz + x.agua + x.mnt + x.renta;
+            } else if (machineId === 'v_limpieza_6' || machineId === 'v_limpieza_12') {
+                sales = x.gain_unit * x.lit_day * x.days;
+                costs = x.luz + x.agua + x.mnt + x.renta;
             }
-            
-            const payback = (profit > 0 && inv > 0) ? inv / profit : Infinity;
-            const roiAnnual = (inv > 0) ? (profit * 12) / inv : 0;
-            
-            return { inv, sales, fixed, profit, payback, roiAnnual };
+
+            const profit = sales - costs;
+            const payback = profit > 0 ? x.inv / profit : Infinity;
+            const roi = x.inv > 0 ? ((profit * 12) / x.inv) * 100 : 0;
+
+            return { inv: x.inv, sales, costs, profit, payback, roi };
         }
 
+        // Add model
         function addModel() {
-            if (appState.length >= 3) {
-                alert("Máximo 3 modelos permitidos");
-                return;
-            }
+            if (models.length >= 3) return;
             
-            const firstModel = Object.keys(MODELS)[0];
-            appState.push({
+            const firstKey = Object.keys(MACHINES)[0];
+            models.push({
                 id: Date.now(),
-                type: firstModel,
-                inputs: deepCopy(MODELS[firstModel])
+                machineId: firstKey,
+                inputs: deepCopy(MACHINES[firstKey])
             });
             
             renderModels();
             updateResults();
         }
 
+        // Remove model
         function removeModel(id) {
-            if (appState.length <= 1) {
+            if (models.length <= 1) {
                 alert("Debe haber al menos un modelo");
                 return;
             }
-            appState = appState.filter(m => m.id !== id);
+            models = models.filter(m => m.id !== id);
             renderModels();
             updateResults();
         }
 
-        function updateModelType(id, newType) {
-            const model = appState.find(m => m.id === id);
-            model.type = newType;
-            model.inputs = deepCopy(MODELS[newType]);
+        // Change machine type
+        function changeMachine(id, newMachineId) {
+            const model = models.find(m => m.id === id);
+            model.machineId = newMachineId;
+            model.inputs = deepCopy(MACHINES[newMachineId]);
             renderModels();
             updateResults();
         }
 
+        // Update input
         function updateInput(id, key, value) {
-            const model = appState.find(m => m.id === id);
+            const model = models.find(m => m.id === id);
             model.inputs[key] = parseFloat(value) || 0;
             updateResults();
         }
 
+        // Render models panel
         function renderModels() {
-            const container = document.getElementById('models-list');
+            const container = document.getElementById('models-container');
             container.innerHTML = '';
-            
-            appState.forEach((model, idx) => {
-                const card = document.createElement('div');
-                card.className = `model-card model-color-${idx}`;
+
+            models.forEach((model, idx) => {
+                const div = document.createElement('div');
+                div.className = `model-item model-${idx + 1}`;
                 
-                // Build select options with optgroups
-                let selectHTML = `<select onchange="updateModelType(${model.id}, this.value)" style="width:100%; margin-bottom:0.75rem;">`;
-                
-                // Vendings group
-                selectHTML += `<optgroup label="Vendings">`;
-                MODEL_CATEGORIES["Vendings"].forEach(id => {
-                    selectHTML += `<option value="${id}" ${model.type === id ? 'selected' : ''}>${MODEL_NAMES[id]}</option>`;
-                });
-                selectHTML += `</optgroup>`;
-                
-                // Ventanas/Kioskos group
-                selectHTML += `<optgroup label="Ventanas/Kioskos">`;
-                MODEL_CATEGORIES["Ventanas/Kioskos"].forEach(id => {
-                    selectHTML += `<option value="${id}" ${model.type === id ? 'selected' : ''}>${MODEL_NAMES[id]}</option>`;
-                });
-                selectHTML += `</optgroup></select>`;
-                
+                // Build select
+                let selectHTML = `<select class="form-select" onchange="changeMachine(${model.id}, this.value)" style="margin-bottom:1rem;">`;
+                for (const [catName, machines] of Object.entries(CATEGORIES)) {
+                    selectHTML += `<optgroup label="${catName}">`;
+                    machines.forEach(mId => {
+                        selectHTML += `<option value="${mId}" ${model.machineId === mId ? 'selected' : ''}>${MACHINES[mId].name}</option>`;
+                    });
+                    selectHTML += `</optgroup>`;
+                }
+                selectHTML += '</select>';
+
                 // Build inputs
-                let inputsHTML = '<div class="controls-grid">';
-                const inputs = model.inputs;
-                for (let key in inputs) {
-                    if (key === 'inv') continue; // Skip investment in inputs
+                let inputsHTML = '<div class="form-grid">';
+                for (const [key, value] of Object.entries(model.inputs)) {
+                    if (key === 'name') continue;
                     inputsHTML += `
-                        <div class="control-group">
-                            <label style="font-size:0.75rem;">${getLabel(key)}</label>
-                            <input type="number" value="${inputs[key]}" 
-                                onchange="updateInput(${model.id}, '${key}', this.value)"
-                                style="padding:0.4rem 0.6rem; font-size:0.85rem;">
+                        <div class="form-group">
+                            <label class="form-label">${LABELS[key] || key}</label>
+                            <input type="number" class="form-input" value="${value}" 
+                                onchange="updateInput(${model.id}, '${key}', this.value)">
                         </div>
                     `;
                 }
                 inputsHTML += '</div>';
-                
-                card.innerHTML = `
+
+                div.innerHTML = `
                     <div class="model-header">
-                        <span class="model-title" style="color:${COLORS[idx]}">Modelo ${idx + 1}</span>
-                        ${appState.length > 1 ? `<button class="btn-remove" onclick="removeModel(${model.id})">✕</button>` : ''}
+                        <span class="model-number">MODELO ${idx + 1}</span>
+                        ${models.length > 1 ? `<button class="btn-icon" onclick="removeModel(${model.id})">×</button>` : ''}
                     </div>
                     ${selectHTML}
                     ${inputsHTML}
                 `;
                 
-                container.appendChild(card);
+                container.appendChild(div);
             });
-            
-            // Update add button state
-            const addBtn = document.getElementById('btn-add-model');
-            addBtn.disabled = appState.length >= 3;
-            addBtn.textContent = appState.length >= 3 ? 'Máximo 3 modelos' : '+ Agregar Modelo';
+
+            // Update add button
+            const btn = document.getElementById('btn-add');
+            btn.disabled = models.length >= 3;
+            btn.innerHTML = models.length >= 3 ? 
+                '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg> Máximo 3 modelos' :
+                '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Agregar Modelo (Máx. 3)';
         }
 
-        function getLabel(key) {
-            const labels = {
-                price_ice: "Precio hielo",
-                loads_m: "Bolsas/mes",
-                price_gar: "Precio garrafón",
-                gar_m: "Garrafones/mes",
-                luz: "Luz",
-                agua: "Agua",
-                mnt: "Mantenimiento",
-                renta: "Renta",
-                gain_unit: "Ganancia/unit",
-                lit_day: "Litros/día",
-                kg_day: "Kg/día",
-                days: "Días/mes"
-            };
-            return labels[key] || key;
-        }
-
+        // Update all results
         function updateResults() {
-            const results = appState.map(m => calc(m.type, m.inputs));
+            const results = models.map(m => calculateModel(m.machineId, m.inputs));
             
+            // Calculate totals
+            const totalInv = results.reduce((sum, r) => sum + r.inv, 0);
+            const totalSales = results.reduce((sum, r) => sum + r.sales, 0);
+            const totalCosts = results.reduce((sum, r) => sum + r.costs, 0);
+            const totalProfit = results.reduce((sum, r) => sum + r.profit, 0);
+            const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+
+            // Update total card
+            document.getElementById('total-profit').textContent = fmtMoney(totalProfit);
+            document.getElementById('total-investment').textContent = fmtMoney(totalInv);
+            document.getElementById('total-payback').textContent = totalPayback === Infinity ? '∞' : fmtNum(totalPayback) + ' meses';
+
             // Update table
-            const table = document.getElementById('results-table');
-            let html = `
-                <thead>
-                    <tr>
-                        <th>Concepto</th>
-                        ${appState.map((m, i) => `<th style="color:${COLORS[i]}">${MODEL_NAMES[m.type]}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Inversión</td>
-                        ${results.map(r => `<td>${fmtMoney(r.inv)}</td>`).join('')}
-                    </tr>
-                    <tr>
-                        <td>Ventas Mensuales</td>
-                        ${results.map(r => `<td>${fmtMoney(r.sales)}</td>`).join('')}
-                    </tr>
-                    <tr>
-                        <td>Costos Fijos</td>
-                        ${results.map(r => `<td>${fmtMoney(r.fixed)}</td>`).join('')}
-                    </tr>
-                    <tr style="font-weight:600; background:rgba(16,185,129,0.1)">
-                        <td>Utilidad Mensual</td>
-                        ${results.map(r => `<td style="color:var(--success)">${fmtMoney(r.profit)}</td>`).join('')}
-                    </tr>
-                    <tr>
-                        <td>Recuperación (meses)</td>
-                        ${results.map(r => `<td>${r.payback === Infinity ? '∞' : fmtNum(r.payback)}</td>`).join('')}
-                    </tr>
-                    <tr>
-                        <td>ROI Anual</td>
-                        ${results.map(r => `<td>${fmtNum(r.roiAnnual * 100, 0)}%</td>`).join('')}
-                    </tr>
-                </tbody>
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = results.map((r, i) => `
+                <tr>
+                    <td style="color:${COLORS[i]}">${MACHINES[models[i].machineId].name}</td>
+                    <td class="text-right">${fmtMoney(r.inv)}</td>
+                    <td class="text-right">${fmtMoney(r.sales)}</td>
+                    <td class="text-right">${fmtMoney(r.costs)}</td>
+                    <td class="text-right ${r.profit >= 0 ? 'highlight-positive' : 'highlight-negative'}">${fmtMoney(r.profit)}</td>
+                    <td class="text-right">${r.payback === Infinity ? '∞' : fmtNum(r.payback)}</td>
+                    <td class="text-right">${fmtNum(r.roi, 0)}%</td>
+                </tr>
+            `).join('');
+
+            // Update footer (totals)
+            const totalROI = totalInv > 0 ? ((totalProfit * 12) / totalInv) * 100 : 0;
+            document.getElementById('table-footer').innerHTML = `
+                <tr style="border-top: 2px solid var(--border);">
+                    <td>TOTAL</td>
+                    <td class="text-right">${fmtMoney(totalInv)}</td>
+                    <td class="text-right">${fmtMoney(totalSales)}</td>
+                    <td class="text-right">${fmtMoney(totalCosts)}</td>
+                    <td class="text-right highlight-positive">${fmtMoney(totalProfit)}</td>
+                    <td class="text-right">${totalPayback === Infinity ? '∞' : fmtNum(totalPayback)}</td>
+                    <td class="text-right">${fmtNum(totalROI, 0)}%</td>
+                </tr>
             `;
-            table.innerHTML = html;
-            
+
             // Update charts
             updateCharts(results);
+            updateLegend();
         }
 
-        let profitChart, paybackChart;
-
+        // Initialize charts
         function initCharts() {
             const ctx1 = document.getElementById('profitChart').getContext('2d');
             const ctx2 = document.getElementById('paybackChart').getContext('2d');
-            
+
             profitChart = new Chart(ctx1, {
                 type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Utilidad Mensual',
-                        data: [],
-                        backgroundColor: COLORS
-                    }]
-                },
+                data: { labels: [], datasets: [] },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.5,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => fmtMoney(ctx.raw)
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            ticks: {
-                                callback: (v) => '$' + (v/1000).toFixed(0) + 'k'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            paybackChart = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Meses',
-                        data: [],
-                        backgroundColor: COLORS
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
                     },
                     scales: {
                         y: {
+                            beginAtZero: true,
                             ticks: {
+                                color: '#9ca3af',
+                                callback: (v) => '$' + (v/1000).toFixed(0) + 'k'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#9ca3af' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            paybackChart = new Chart(ctx2, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#9ca3af',
                                 callback: (v) => v + ' meses'
-                            }
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#9ca3af' },
+                            grid: { display: false }
                         }
                     }
                 }
             });
         }
 
+        // Update charts
         function updateCharts(results) {
-            const labels = appState.map(m => MODEL_NAMES[m.type]);
-            const profits = results.map(r => r.profit);
-            const paybacks = results.map(r => r.payback === Infinity ? 0 : r.payback);
+            const labels = models.map((m, i) => `Modelo ${i+1}`);
             
-            profitChart.data.labels = labels;
-            profitChart.data.datasets[0].data = profits;
+            profitChart.data = {
+                labels: labels,
+                datasets: [{
+                    data: results.map(r => r.profit),
+                    backgroundColor: COLORS.slice(0, models.length),
+                    borderRadius: 6
+                }]
+            };
             profitChart.update();
-            
-            paybackChart.data.labels = labels;
-            paybackChart.data.datasets[0].data = paybacks;
+
+            paybackChart.data = {
+                labels: labels,
+                datasets: [{
+                    data: results.map(r => r.payback === Infinity ? 0 : r.payback),
+                    backgroundColor: COLORS.slice(0, models.length),
+                    borderRadius: 6
+                }]
+            };
             paybackChart.update();
         }
 
+        // Update legend
+        function updateLegend() {
+            const legend = document.getElementById('chart-legend');
+            legend.innerHTML = models.map((m, i) => `
+                <div class="legend-item">
+                    <div class="legend-color" style="background:${COLORS[i]}"></div>
+                    <span>${MACHINES[m.machineId].name}</span>
+                </div>
+            `).join('');
+        }
+
+        // Reset all
         function resetAll() {
-            appState = [];
+            models = [];
             addModel();
         }
 
-        function copyToWhatsapp() {
-            const results = appState.map(m => calc(m.type, m.inputs));
-            let text = "*Reporte ROI - Comparación de Modelos*\n\n";
-            
-            appState.forEach((m, i) => {
+        // Export to WhatsApp
+        function exportToWhatsapp() {
+            const results = models.map(m => calculateModel(m.machineId, m.inputs));
+            const totalInv = results.reduce((s, r) => s + r.inv, 0);
+            const totalProfit = results.reduce((s, r) => s + r.profit, 0);
+            const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+
+            let text = "*🧮 CALCULADORA ROI PREMIUM*\n\n";
+            text += "*RESUMEN TOTAL:*\n";
+            text += `💰 Inversión: ${fmtMoney(totalInv)}\n`;
+            text += `📈 Utilidad Mensual: ${fmtMoney(totalProfit)}\n`;
+            text += `🗓️ Recuperación: ${totalPayback === Infinity ? '∞' : fmtNum(totalPayback) + ' meses'}\n\n`;
+            text += "*DESGLOSE POR MODELO:*\n\n";
+
+            models.forEach((m, i) => {
                 const r = results[i];
-                text += `*${MODEL_NAMES[m.type]}*\n`;
-                text += `💰 Inversión: ${fmtMoney(r.inv)}\n`;
-                text += `📈 Ventas: ${fmtMoney(r.sales)}\n`;
-                text += `✅ Utilidad: ${fmtMoney(r.profit)}\n`;
-                text += `🗓️ Recuperación: ${r.payback === Infinity ? '∞' : fmtNum(r.payback) + ' meses'}\n`;
-                text += `🚀 ROI: ${fmtNum(r.roiAnnual * 100, 0)}%\n\n`;
+                text += `*${i+1}. ${MACHINES[m.machineId].name}*\n`;
+                text += `   Inversión: ${fmtMoney(r.inv)}\n`;
+                text += `   Ventas: ${fmtMoney(r.sales)}\n`;
+                text += `   Utilidad: ${fmtMoney(r.profit)}\n`;
+                text += `   Recup.: ${r.payback === Infinity ? '∞' : fmtNum(r.payback) + ' meses'}\n\n`;
             });
-            
+
             navigator.clipboard.writeText(text).then(() => {
-                alert("Copiado al portapapeles");
+                alert("¡Copiado al portapapeles! Listo para pegar en WhatsApp.");
             });
         }
 
+        // Generate PDF
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
             
-            // Title
-            doc.setFontSize(20);
-            doc.text("Reporte ROI - Comparación de Modelos", 20, 20);
-            
-            // Date
+            const results = models.map(m => calculateModel(m.machineId, m.inputs));
+            const totalInv = results.reduce((s, r) => s + r.inv, 0);
+            const totalSales = results.reduce((s, r) => s + r.sales, 0);
+            const totalCosts = results.reduce((s, r) => s + r.costs, 0);
+            const totalProfit = results.reduce((s, r) => s + r.profit, 0);
+            const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+            const totalROI = totalInv > 0 ? ((totalProfit * 12) / totalInv) * 100 : 0;
+
+            // Header
+            doc.setFillColor(59, 130, 246);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('CALCULADORA ROI PREMIUM', 105, 25, { align: 'center' });
             doc.setFontSize(10);
-            doc.text("Fecha: " + new Date().toLocaleDateString('es-MX'), 20, 30);
-            
-            const results = appState.map(m => calc(m.type, m.inputs));
-            let y = 50;
-            
-            appState.forEach((m, i) => {
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Generado: ${new Date().toLocaleDateString('es-MX')}`, 105, 32, { align: 'center' });
+
+            // Summary Box
+            doc.setFillColor(17, 24, 39);
+            doc.roundedRect(10, 50, 190, 35, 3, 3, 'F');
+            doc.setTextColor(59, 130, 246);
+            doc.setFontSize(12);
+            doc.text('RESUMEN TOTAL', 15, 60);
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`UTILIDAD MENSUAL: ${fmtMoney(totalProfit)}`, 15, 75);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Inversión Total: ${fmtMoney(totalInv)}  |  Recuperación: ${totalPayback === Infinity ? 'N/A' : fmtNum(totalPayback) + ' meses'}  |  ROI: ${fmtNum(totalROI, 0)}%`, 15, 82);
+
+            // Individual Table
+            let y = 95;
+            doc.setTextColor(59, 130, 246);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('DESGLOSE INDIVIDUAL', 10, y);
+            y += 10;
+
+            // Table header
+            doc.setFillColor(31, 41, 55);
+            doc.rect(10, y-5, 190, 8, 'F');
+            doc.setTextColor(156, 163, 175);
+            doc.setFontSize(9);
+            doc.text('Modelo', 12, y);
+            doc.text('Inversión', 70, y);
+            doc.text('Ventas', 100, y);
+            doc.text('Utilidad', 130, y);
+            doc.text('Recup.', 160, y);
+            doc.text('ROI', 185, y);
+            y += 8;
+
+            // Table rows
+            models.forEach((m, i) => {
                 const r = results[i];
-                
-                doc.setFontSize(14);
-                doc.text(MODEL_NAMES[m.type], 20, y);
-                y += 10;
-                
-                doc.setFontSize(11);
-                doc.text(`Inversión: ${fmtMoney(r.inv)}`, 20, y);
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'normal');
+                doc.text(MACHINES[m.machineId].name, 12, y);
+                doc.text(fmtMoney(r.inv), 70, y);
+                doc.text(fmtMoney(r.sales), 100, y);
+                doc.setTextColor(r.profit >= 0 ? 16 : 239, r.profit >= 0 ? 185 : 68, r.profit >= 0 ? 129 : 68);
+                doc.text(fmtMoney(r.profit), 130, y);
+                doc.setTextColor(255, 255, 255);
+                doc.text(r.payback === Infinity ? '∞' : fmtNum(r.payback), 160, y);
+                doc.text(fmtNum(r.roi, 0) + '%', 185, y);
                 y += 7;
-                doc.text(`Ventas Mensuales: ${fmtMoney(r.sales)}`, 20, y);
-                y += 7;
-                doc.text(`Costos Fijos: ${fmtMoney(r.fixed)}`, 20, y);
-                y += 7;
-                doc.text(`Utilidad Mensual: ${fmtMoney(r.profit)}`, 20, y);
-                y += 7;
-                doc.text(`Recuperación: ${r.payback === Infinity ? 'N/A' : fmtNum(r.payback) + ' meses'}`, 20, y);
-                y += 7;
-                doc.text(`ROI Anual: ${fmtNum(r.roiAnnual * 100, 0)}%`, 20, y);
-                y += 15;
             });
-            
-            doc.save("reporte-roi.pdf");
+
+            // Total row
+            y += 2;
+            doc.setFillColor(59, 130, 246);
+            doc.rect(10, y-5, 190, 8, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.text('TOTAL', 12, y);
+            doc.text(fmtMoney(totalInv), 70, y);
+            doc.text(fmtMoney(totalSales), 100, y);
+            doc.text(fmtMoney(totalProfit), 130, y);
+            doc.text(totalPayback === Infinity ? '∞' : fmtNum(totalPayback), 160, y);
+            doc.text(fmtNum(totalROI, 0) + '%', 185, y);
+
+            doc.save('reporte-roi-premium.pdf');
         }
 
         // Initialize
-        addModel();
         initCharts();
+        addModel();
     </script>
 </body>
 </html>
