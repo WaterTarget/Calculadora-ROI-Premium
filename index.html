@@ -146,6 +146,18 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
+        /* Style for optgroup */
+        select optgroup {
+            background: var(--surface-highlight);
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 8px;
+        }
+        select option {
+            background: var(--surface);
+            color: var(--text-main);
+            padding: 8px;
+        }
         .controls-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -432,23 +444,36 @@
            Only colors in Chart config updated for Dark Theme
         */
         const MODELS = {
+            // VENDINGS
+            "vending_hielo": { "inv": 255000, "price_ice": 25, "loads_m": 750, "luz": 3150, "agua": 1575, "mnt": 525, "renta": 0 },
+            "vending_agua": { "inv": 119000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 0 },
+            "vending_croquetas": { "inv": 95000, "gain_unit": 20, "kg_day": 50, "days": 30, "price_sale": 50, "luz": 800, "agua": 400, "mnt": 300, "renta": 3000 },
+            // VENTANAS/KIOSKOS
+            "kiosko_agua": { "inv": 79000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 5000 },
             "kiosko_duo": { "inv": 244000, "price_ice": 25, "loads_m": 750, "price_gar": 15, "gar_m": 1500, "luz": 4950, "agua": 2475, "mnt": 825, "renta": 5000 },
-            "c7": { "inv": 79000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 5000 },
-            "c12": { "inv": 119000, "price_gar": 15, "gar_m": 1500, "luz": 900, "agua": 1800, "mnt": 300, "renta": 0 },
-            "c17": { "inv": 49000, "gain_unit": 8, "lit_day": 150, "days": 30, "price_sale": 25, "luz": 500, "agua": 800, "mnt": 200, "renta": 2000 },
-            "c22": { "inv": 95000, "gain_unit": 20, "kg_day": 50, "days": 30, "price_sale": 50, "luz": 800, "agua": 400, "mnt": 300, "renta": 3000 },
-            "c27": { "inv": 217000, "price_ice": 25, "loads_m": 750, "luz": 3150, "agua": 1575, "mnt": 525, "renta": 0 },
-            "c32": { "inv": 125000, "price_gar": 20, "gar_m": 3000, "luz": 3600, "agua": 1800, "mnt": 600, "renta": 5000, "sueldo": 18000 }
+            "v_limpieza_6": { "inv": 49000, "gain_unit": 8, "lit_day": 150, "days": 30, "price_sale": 25, "luz": 500, "agua": 800, "mnt": 200, "renta": 2000 },
+            "v_limpieza_12": { "inv": 88000, "gain_unit": 8, "lit_day": 300, "days": 30, "price_sale": 25, "luz": 900, "agua": 1200, "mnt": 350, "renta": 2500 },
+            "v_croquetas": { "inv": 79000, "gain_unit": 15, "kg_day": 40, "days": 30, "price_sale": 40, "luz": 600, "agua": 300, "mnt": 250, "renta": 2500 },
+            "v_hielo": { "inv": 217000, "price_ice": 25, "loads_m": 750, "luz": 3150, "agua": 1575, "mnt": 525, "renta": 0 }
         };
+        
         const MODEL_NAMES = { 
-            "kiosko_duo": "KIOSKO DUO 130 GPD / 450 KG", 
-            "c7": "KIOSKO 130 GPD", 
-            "c12": "VENDING AGUA 130 GPD", 
-            "c17": "VENTANA LIMPIEZA ($49,000)", 
-            "c22": "CROQUETAS/GRANOS/CAFÉ ($95,000 - 3 MAQ)", 
-            "c27": "VENTANA Y VENDING HIELO", 
-            "c32": "CENTRO DE LLENADO" 
+            "vending_hielo": "Hielo", 
+            "vending_agua": "Agua", 
+            "vending_croquetas": "Croquetas, Cafe y Granos",
+            "kiosko_agua": "Kiosko Agua", 
+            "kiosko_duo": "Kiosko Duo", 
+            "v_limpieza_6": "V. Limpieza 6", 
+            "v_limpieza_12": "V. Limpieza 12",
+            "v_croquetas": "V. Croquetas, Granos y Café",
+            "v_hielo": "V. Hielo"
         };
+
+        const MODEL_CATEGORIES = {
+            "Vendings": ["vending_hielo", "vending_agua", "vending_croquetas"],
+            "Ventanas/Kioskos": ["kiosko_agua", "kiosko_duo", "v_limpieza_6", "v_limpieza_12", "v_croquetas", "v_hielo"]
+        };
+        
         const fmtMoney = (n) => {
             if (!isFinite(n)) return "—";
             return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
@@ -464,6 +489,43 @@
             inputs: deepCopy(MODELS[Object.keys(MODELS)[0]])
         };
         const inputSchema = {
+            vending_hielo: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["price_ice", "Precio bolsa 5kg (MXN)", 0, 200, 1],
+                ["loads_m", "Bolsas / mes (base)", 0, 10000, 10],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            vending_agua: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
+                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            vending_croquetas: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["gain_unit", "Margen por kg (MXN)", 0, 300, 1],
+                ["kg_day", "Kg / día (base)", 0, 2000, 1],
+                ["days", "Días operativos / mes", 1, 31, 1],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            kiosko_agua: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
+                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
             kiosko_duo: [
                 ["inv", "Inversión (MXN)", 0, 2000000, 1000],
                 ["price_ice", "Precio bolsa Ice (MXN)", 0, 200, 1],
@@ -475,25 +537,7 @@
                 ["mnt", "Mantenimiento / mes", 0, 200000, 50],
                 ["renta", "Renta / mes", 0, 200000, 50],
             ],
-            c7: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
-                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            c12: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
-                ["gar_m", "Garrafones / mes (base)", 0, 20000, 10],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            c17: [
+            v_limpieza_6: [
                 ["inv", "Inversión (MXN)", 0, 2000000, 1000],
                 ["gain_unit", "Margen por litro (MXN)", 0, 200, 1],
                 ["lit_day", "Litros / día (base)", 0, 5000, 5],
@@ -503,7 +547,17 @@
                 ["mnt", "Mantenimiento / mes", 0, 200000, 50],
                 ["renta", "Renta / mes", 0, 200000, 50],
             ],
-            c22: [
+            v_limpieza_12: [
+                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
+                ["gain_unit", "Margen por litro (MXN)", 0, 200, 1],
+                ["lit_day", "Litros / día (base)", 0, 5000, 5],
+                ["days", "Días operativos / mes", 1, 31, 1],
+                ["luz", "Luz / mes", 0, 200000, 50],
+                ["agua", "Agua / mes", 0, 200000, 50],
+                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
+                ["renta", "Renta / mes", 0, 200000, 50],
+            ],
+            v_croquetas: [
                 ["inv", "Inversión (MXN)", 0, 2000000, 1000],
                 ["gain_unit", "Margen por kg (MXN)", 0, 300, 1],
                 ["kg_day", "Kg / día (base)", 0, 2000, 1],
@@ -513,7 +567,7 @@
                 ["mnt", "Mantenimiento / mes", 0, 200000, 50],
                 ["renta", "Renta / mes", 0, 200000, 50],
             ],
-            c27: [
+            v_hielo: [
                 ["inv", "Inversión (MXN)", 0, 2000000, 1000],
                 ["price_ice", "Precio bolsa 5kg (MXN)", 0, 200, 1],
                 ["loads_m", "Bolsas / mes (base)", 0, 10000, 10],
@@ -521,16 +575,6 @@
                 ["agua", "Agua / mes", 0, 200000, 50],
                 ["mnt", "Mantenimiento / mes", 0, 200000, 50],
                 ["renta", "Renta / mes", 0, 200000, 50],
-            ],
-            c32: [
-                ["inv", "Inversión (MXN)", 0, 2000000, 1000],
-                ["price_gar", "Precio garrafón (MXN)", 0, 200, 1],
-                ["gar_m", "Garrafones / mes (base)", 0, 50000, 10],
-                ["luz", "Luz / mes", 0, 200000, 50],
-                ["agua", "Agua / mes", 0, 200000, 50],
-                ["mnt", "Mantenimiento / mes", 0, 200000, 50],
-                ["renta", "Renta / mes", 0, 200000, 50],
-                ["sueldo", "Nomina / mes", 0, 500000, 100],
             ],
         };
         function calc(modelId, inputs, demandFactor) {
@@ -546,30 +590,30 @@
                 sales = (+x.price_ice || 0) * loads + (+x.price_gar || 0) * gars;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
-            } else if (modelId === "c7" || modelId === "c12") {
+            } else if (modelId === "kiosko_agua") {
                 const gars = (+x.gar_m || 0) * df;
                 sales = (+x.price_gar || 0) * gars;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
-            } else if (modelId === "c17") {
+            } else if (modelId === "vending_agua") {
+                const gars = (+x.gar_m || 0) * df;
+                sales = (+x.price_gar || 0) * gars;
+                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
+                profit = sales - fixed;
+            } else if (modelId === "v_limpieza_6" || modelId === "v_limpieza_12") {
                 const litrosMes = (+x.lit_day || 0) * (+x.days || 30) * df;
                 sales = (+x.gain_unit || 0) * litrosMes;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
-            } else if (modelId === "c22") {
+            } else if (modelId === "v_croquetas" || modelId === "vending_croquetas") {
                 const kgMes = (+x.kg_day || 0) * (+x.days || 30) * df;
                 sales = (+x.gain_unit || 0) * kgMes;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
                 profit = sales - fixed;
-            } else if (modelId === "c27") {
+            } else if (modelId === "vending_hielo" || modelId === "v_hielo") {
                 const loads = (+x.loads_m || 0) * df;
                 sales = (+x.price_ice || 0) * loads;
                 fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0);
-                profit = sales - fixed;
-            } else if (modelId === "c32") {
-                const gars = (+x.gar_m || 0) * df;
-                sales = (+x.price_gar || 0) * gars;
-                fixed = (+x.luz || 0) + (+x.agua || 0) + (+x.mnt || 0) + (+x.renta || 0) + (+x.sueldo || 0);
                 profit = sales - fixed;
             }
             const payback = (profit > 0 && inv > 0) ? inv / profit : Infinity;
@@ -606,12 +650,28 @@
         const demandFactorInput = document.getElementById("demandFactor");
         function buildModelOptions() {
             modelSelect.innerHTML = "";
-            Object.keys(MODELS).forEach(id => {
+            
+            // Create Vendings optgroup
+            const vendingsGroup = document.createElement("optgroup");
+            vendingsGroup.label = "Vendings";
+            MODEL_CATEGORIES["Vendings"].forEach(id => {
                 const opt = document.createElement("option");
                 opt.value = id;
                 opt.textContent = MODEL_NAMES[id] || id;
-                modelSelect.appendChild(opt);
+                vendingsGroup.appendChild(opt);
             });
+            modelSelect.appendChild(vendingsGroup);
+            
+            // Create Ventanas/Kioskos optgroup
+            const ventanasGroup = document.createElement("optgroup");
+            ventanasGroup.label = "Ventanas/Kioskos";
+            MODEL_CATEGORIES["Ventanas/Kioskos"].forEach(id => {
+                const opt = document.createElement("option");
+                opt.value = id;
+                opt.textContent = MODEL_NAMES[id] || id;
+                ventanasGroup.appendChild(opt);
+            });
+            modelSelect.appendChild(ventanasGroup);
         }
         function buildControls() {
             controls.innerHTML = "";
