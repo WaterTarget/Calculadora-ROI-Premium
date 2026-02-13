@@ -258,6 +258,13 @@
             padding: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.02);
             position: relative;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-box canvas {
+            flex: 1;
+            max-height: 240px;
         }
         .risk-banner {
             grid-column: 1 / -1;
@@ -403,14 +410,14 @@
                             <h2 style="font-size:0.9rem; color:var(--text-muted)">Flujo de Efectivo Acumulado</h2>
                             <div class="tag"><span class="dot"></span> Proyección 24 meses</div>
                         </div>
-                        <canvas id="cashChart" height="220"></canvas>
+                        <canvas id="cashChart"></canvas>
                     </div>
                     <div class="panel chart-box">
                         <div class="panel-header" style="border:none; padding:0 0 10px; margin:0;">
                             <h2 style="font-size:0.9rem; color:var(--text-muted)">Retorno Anual</h2>
                             <div class="tag"><span class="dot purple"></span> ROI %</div>
                         </div>
-                        <canvas id="roiChart" height="220"></canvas>
+                        <canvas id="roiChart"></canvas>
                     </div>
                 </div>
                 <div class="disclaimer">
@@ -666,7 +673,8 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { labels: { color: textColor, font: { family: 'Inter' } } },
@@ -682,6 +690,9 @@
                     scales: {
                         x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Inter' } } },
                         y: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Inter' } } }
+                    },
+                    layout: {
+                        padding: 10
                     }
                 }
             });
@@ -701,7 +712,8 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.2,
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -719,6 +731,9 @@
                             ticks: { color: textColor, font: { family: 'Inter' }, callback: (v) => (v * 100).toFixed(0) + "%" },
                             suggestedMax: 2
                         }
+                    },
+                    layout: {
+                        padding: 10
                     }
                 }
             });
