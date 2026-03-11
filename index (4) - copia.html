@@ -1,0 +1,1198 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Calculadora ROI Premium | AGRANEL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --surface: #111827;
+            --surface-light: #1f2937;
+            --border: #374151;
+            --primary: #3b82f6;
+            --primary-light: #60a5fa;
+            --accent: #8b5cf6;
+            --text-main: #f9fafb;
+            --text-secondary: #9ca3af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.15);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        /* Header Premium */
+        .header {
+            text-align: center;
+            padding: 3rem 0;
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        /* Main Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        /* Model Cards */
+        .model-item {
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .model-item:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+        }
+        .model-item.model-1 { border-left: 3px solid #3b82f6; }
+        .model-item.model-2 { border-left: 3px solid #f59e0b; }
+        .model-item.model-3 { border-left: 3px solid #10b981; }
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .model-number {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .model-1 .model-number { color: #3b82f6; }
+        .model-2 .model-number { color: #f59e0b; }
+        .model-3 .model-number { color: #10b981; }
+        .btn-icon {
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: var(--danger);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background: var(--danger);
+            color: white;
+        }
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+        .form-select, .form-input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-add {
+            width: 100%;
+            background: transparent;
+            border: 2px dashed var(--border);
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+        .btn-add:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .btn-add:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-whatsapp {
+            background: #25d366;
+            color: white;
+            flex: 1;
+        }
+        .btn-whatsapp:hover {
+            background: #128c7e;
+            transform: translateY(-2px);
+        }
+        .btn-pdf {
+            background: var(--danger);
+            color: white;
+            flex: 1;
+        }
+        .btn-pdf:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        .btn-reset {
+            background: var(--surface-light);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+        .btn-reset:hover {
+            color: var(--text-main);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        /* Results Section */
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        /* Total Card - Highlighted */
+        .total-card {
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .total-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .total-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .total-value {
+            font-size: 3rem;
+            font-weight: 800;
+            position: relative;
+        }
+        /* Tables */
+        .table-wrapper {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table-header {
+            background: var(--surface-light);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: rgba(255,255,255,0.02);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        .text-right { text-align: right; }
+        .highlight-positive { color: var(--success); font-weight: 600; }
+        .highlight-negative { color: var(--danger); }
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: 350px;
+        }
+        .chart-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        /* Cash Flow Chart Specific */
+        .cash-flow-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: 400px;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Calculadora ROI Premium</h1>
+            <p>Suma hasta 3 modelos de negocio y visualiza resultados individuales y totales</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="models-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                            Modelos
+                        </div>
+                        <button class="btn-reset" onclick="resetAll()">Reiniciar</button>
+                    </div>
+                    
+                    <div id="models-container"></div>
+                    
+                    <button id="btn-add" class="btn btn-add" onclick="addModel()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Agregar Modelo (Máx. 3)
+                    </button>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-whatsapp" onclick="exportToWhatsapp()">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326z"/>
+                            </svg>
+                            WhatsApp
+                        </button>
+                        <button class="btn btn-pdf" onclick="generatePDF()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="results-section">
+                <div class="total-card">
+                    <div class="total-label">UTILIDAD TOTAL MENSUAL</div>
+                    <div class="total-value" id="total-profit">$0</div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">
+                        Inversión Total: <span id="total-investment">$0</span> | 
+                        Recuperación: <span id="total-payback">-</span>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <div class="table-header">Desglose por Modelo</div>
+                    <table id="details-table">
+                        <thead>
+                            <tr>
+                                <th>Modelo</th>
+                                <th class="text-right">Inversión</th>
+                                <th class="text-right">Utilidad Bruta</th>
+                                <th class="text-right">Costos Op.</th>
+                                <th class="text-right">Utilidad Neta</th>
+                                <th class="text-right">Recup.</th>
+                                <th class="text-right">ROI Anual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body"></tbody>
+                        <tfoot id="table-footer" style="background: var(--surface-light); font-weight: 600;"></tfoot>
+                    </table>
+                </div>
+
+                <div class="cash-flow-container">
+                    <div class="chart-title">Flujo de Efectivo Acumulado (24 Meses) - Proyección de Retorno</div>
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">Comparación de Utilidad por Modelo</div>
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">Tiempo de Recuperación (Meses)</div>
+                        <canvas id="paybackChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="legend" id="chart-legend"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de Datos de Máquinas ACTUALIZADA - Limpieza, Granos, Sin Agua, Desglose de Productos
+        const MACHINES = {
+            // VENDINGS
+            vending_hielo: { name: "Hielo", inv: 255000, price_ice: 25, loads_m: 750, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 },
+            vending_agua: { name: "Agua", inv: 119000, price_gar: 15, gar_m: 1500, luz: 1500, agua: 1500, mnt: 1500, renta: 0 },
+            vending_croquetas: { name: "Croquetas, Café y Granos", inv: 95000, gain_unit: 20, kg_day: 50, days: 30, luz_mnt: 500, renta: 3000 },
+            // VENTANAS/KIOSKOS
+            kiosko_agua: { name: "Kiosko Agua", inv: 79000, price_gar: 15, gar_m: 1500, luz: 1500, agua: 1500, mnt: 1500, renta: 5000 },
+            kiosko_duo: { name: "Kiosko Duo", inv: 244000, price_ice: 25, loads_m: 750, price_gar: 15, gar_m: 1500, luz: 5250, agua: 1698.75, mnt: 1698.75, renta: 5000 },
+            
+            // Ventana Limpieza 6 Productos (Sin agua, Luz y Mant combinados, desglose individual)
+            v_limpieza_6: { 
+                name: "V. Limpieza (6 Prod)", inv: 49000, days: 30, 
+                p1_lit: 25, p2_lit: 25, p3_lit: 25, p4_lit: 25, p5_lit: 25, p6_lit: 25,
+                luz_mnt: 500, renta: 2000 
+            },
+            
+            // Ventana Limpieza 12 Productos
+            v_limpieza_12: { 
+                name: "V. Limpieza (12 Prod)", inv: 88000, days: 30, 
+                p1_lit: 20, p2_lit: 20, p3_lit: 20, p4_lit: 20, p5_lit: 20, p6_lit: 20,
+                p7_lit: 20, p8_lit: 20, p9_lit: 20, p10_lit: 20, p11_lit: 20, p12_lit: 20,
+                luz_mnt: 500, renta: 2500 
+            },
+
+            v_croquetas: { name: "V. Croquetas, Granos y Café", inv: 79000, gain_unit: 15, kg_day: 40, days: 30, luz_mnt: 500, renta: 2500 },
+            v_hielo: { name: "V. Hielo", inv: 217000, price_ice: 25, loads_m: 750, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 }
+        };
+
+        const CATEGORIES = {
+            "Vendings": ["vending_hielo", "vending_agua", "vending_croquetas"],
+            "Ventanas/Kioskos": ["kiosko_agua", "kiosko_duo", "v_limpieza_6", "v_limpieza_12", "v_croquetas", "v_hielo"]
+        };
+
+        const COLORS = ['#3b82f6', '#f59e0b', '#10b981'];
+        
+        // Mapeo de Etiquetas (Nuevos campos para Limpieza)
+        const LABELS = {
+            price_ice: "Precio hielo ($)", loads_m: "Bolsas/mes", price_gar: "Precio garrafón ($)",
+            gar_m: "Garrafones/mes", luz: "Luz ($)", agua: "Agua ($)", mnt: "Mantenimiento ($)",
+            luz_mnt: "Luz y Mant. Fijo ($)", renta: "Renta ($)", gain_unit: "Ganancia por Kg ($)", 
+            kg_day: "Kg vendidos al día", days: "Días operativos al mes",
+            
+            // Etiquetas de Productos de Limpieza (incluye Utilidad como referencia)
+            p1_lit: "Detergente Ropa (Lts/día) - Util: $12",
+            p2_lit: "Suavizante (Lts/día) - Util: $9",
+            p3_lit: "Lavatrastes (Lts/día) - Util: $11",
+            p4_lit: "Multiusos (Lts/día) - Util: $7",
+            p5_lit: "Pino (Lts/día) - Util: $7",
+            p6_lit: "Jabón Manos (Lts/día) - Util: $9",
+            p7_lit: "Desengrasante (Lts/día) - Util: $12",
+            p8_lit: "Quitamanchas (Lts/día) - Util: $14",
+            p9_lit: "Limpiavidrios (Lts/día) - Util: $6",
+            p10_lit: "Sarricida (Lts/día) - Util: $8",
+            p11_lit: "Shampoo Autos (Lts/día) - Util: $8",
+            p12_lit: "Desinfectante (Lts/día) - Util: $10"
+        };
+
+        let models = [];
+        let profitChart, paybackChart, cashFlowChart;
+
+        // Formatting
+        const fmtMoney = (n) => {
+            if (!isFinite(n) || isNaN(n)) return "$0";
+            return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
+        };
+
+        const fmtNum = (n, d = 1) => {
+            if (!isFinite(n) || isNaN(n)) return "—";
+            return n.toFixed(d);
+        };
+
+        // Deep copy
+        const deepCopy = (obj) => JSON.parse(JSON.stringify(obj));
+
+        // Calculate single model
+        function calculateModel(machineId, inputs) {
+            const x = inputs;
+            let sales = 0, costs = 0;
+
+            if (machineId === 'kiosko_duo') {
+                sales = (x.price_ice * x.loads_m) + (x.price_gar * x.gar_m);
+                costs = x.luz + x.agua + x.mnt + x.renta;
+            } else if (machineId === 'kiosko_agua' || machineId === 'vending_agua') {
+                sales = x.price_gar * x.gar_m;
+                costs = x.luz + x.agua + x.mnt + x.renta;
+            } else if (machineId === 'vending_hielo' || machineId === 'v_hielo') {
+                sales = x.price_ice * x.loads_m;
+                costs = x.luz + x.agua + x.mnt + x.renta;
+            } else if (machineId === 'vending_croquetas' || machineId === 'v_croquetas') {
+                sales = x.gain_unit * x.kg_day * x.days;
+                costs = x.luz_mnt + x.renta;
+            } else if (machineId === 'v_limpieza_6') {
+                // Cálculo matemático exacto de utilidad por litro x día x días operativos
+                let utilidadDiaria = 
+                    (x.p1_lit * 12) + (x.p2_lit * 9) + (x.p3_lit * 11) + 
+                    (x.p4_lit * 7) + (x.p5_lit * 7) + (x.p6_lit * 9);
+                sales = utilidadDiaria * x.days; // "Sales" aquí funge como Utilidad Bruta total
+                costs = x.luz_mnt + x.renta;
+            } else if (machineId === 'v_limpieza_12') {
+                // Cálculo para los 12 productos
+                let utilidadDiaria = 
+                    (x.p1_lit * 12) + (x.p2_lit * 9) + (x.p3_lit * 11) + 
+                    (x.p4_lit * 7) + (x.p5_lit * 7) + (x.p6_lit * 9) +
+                    (x.p7_lit * 12) + (x.p8_lit * 14) + (x.p9_lit * 6) + 
+                    (x.p10_lit * 8) + (x.p11_lit * 8) + (x.p12_lit * 10);
+                sales = utilidadDiaria * x.days;
+                costs = x.luz_mnt + x.renta;
+            }
+
+            const profit = sales - costs;
+            const payback = profit > 0 ? x.inv / profit : Infinity;
+            const roi = x.inv > 0 ? ((profit * 12) / x.inv) * 100 : 0;
+
+            return { inv: x.inv, sales, costs, profit, payback, roi };
+        }
+
+        // Add model
+        function addModel() {
+            if (models.length >= 3) return;
+            
+            const firstKey = Object.keys(MACHINES)[0];
+            models.push({
+                id: Date.now(),
+                machineId: firstKey,
+                inputs: deepCopy(MACHINES[firstKey])
+            });
+            
+            renderModels();
+            updateResults();
+        }
+
+        // Remove model
+        function removeModel(id) {
+            if (models.length <= 1) {
+                alert("Debe haber al menos un modelo");
+                return;
+            }
+            models = models.filter(m => m.id !== id);
+            renderModels();
+            updateResults();
+        }
+
+        // Change machine type
+        function changeMachine(id, newMachineId) {
+            const model = models.find(m => m.id === id);
+            model.machineId = newMachineId;
+            model.inputs = deepCopy(MACHINES[newMachineId]);
+            renderModels();
+            updateResults();
+        }
+
+        // Update input Reactivo
+        function updateInput(id, key, value) {
+            const model = models.find(m => m.id === id);
+            model.inputs[key] = parseFloat(value) || 0;
+
+            // Lógica Matemática de Actualización Dinámica para Agua y Hielo
+            if (key === 'loads_m' || key === 'gar_m') {
+                let recalculado = false;
+                
+                if ((model.machineId === 'vending_hielo' || model.machineId === 'v_hielo') && model.inputs.luz !== undefined) {
+                    model.inputs.luz = model.inputs.loads_m * 5.00;
+                    model.inputs.agua = model.inputs.loads_m * 0.265;
+                    model.inputs.mnt = model.inputs.loads_m * 0.265;
+                    recalculado = true;
+                } 
+                else if ((model.machineId === 'vending_agua' || model.machineId === 'kiosko_agua') && model.inputs.luz !== undefined) {
+                    model.inputs.luz = model.inputs.gar_m * 1.00;
+                    model.inputs.agua = model.inputs.gar_m * 1.00;
+                    model.inputs.mnt = model.inputs.gar_m * 1.00;
+                    recalculado = true;
+                } 
+                else if (model.machineId === 'kiosko_duo' && model.inputs.luz !== undefined) {
+                    model.inputs.luz = (model.inputs.loads_m * 5.00) + (model.inputs.gar_m * 1.00);
+                    model.inputs.agua = (model.inputs.loads_m * 0.265) + (model.inputs.gar_m * 1.00);
+                    model.inputs.mnt = (model.inputs.loads_m * 0.265) + (model.inputs.gar_m * 1.00);
+                    recalculado = true;
+                }
+
+                if (recalculado) {
+                    const inputLuz = document.getElementById(`input-${model.id}-luz`);
+                    const inputAgua = document.getElementById(`input-${model.id}-agua`);
+                    const inputMnt = document.getElementById(`input-${model.id}-mnt`);
+                    
+                    if (inputLuz) inputLuz.value = Number.isInteger(model.inputs.luz) ? model.inputs.luz : model.inputs.luz.toFixed(2);
+                    if (inputAgua) inputAgua.value = Number.isInteger(model.inputs.agua) ? model.inputs.agua : model.inputs.agua.toFixed(2);
+                    if (inputMnt) inputMnt.value = Number.isInteger(model.inputs.mnt) ? model.inputs.mnt : model.inputs.mnt.toFixed(2);
+                }
+            }
+            updateResults();
+        }
+
+        // Render models panel
+        function renderModels() {
+            const container = document.getElementById('models-container');
+            container.innerHTML = '';
+
+            models.forEach((model, idx) => {
+                const div = document.createElement('div');
+                div.className = `model-item model-${idx + 1}`;
+                
+                // Build select
+                let selectHTML = `<select class="form-select" onchange="changeMachine(${model.id}, this.value)" style="margin-bottom:1rem;">`;
+                for (const [catName, machines] of Object.entries(CATEGORIES)) {
+                    selectHTML += `<optgroup label="${catName}">`;
+                    machines.forEach(mId => {
+                        selectHTML += `<option value="${mId}" ${model.machineId === mId ? 'selected' : ''}>${MACHINES[mId].name}</option>`;
+                    });
+                    selectHTML += `</optgroup>`;
+                }
+                selectHTML += '</select>';
+
+                // Build inputs
+                let inputsHTML = '<div class="form-grid">';
+                for (const [key, value] of Object.entries(model.inputs)) {
+                    if (key === 'name') continue;
+                    
+                    const valDisplay = Number.isInteger(value) ? value : value.toFixed(2);
+                    
+                    inputsHTML += `
+                        <div class="form-group">
+                            <label class="form-label">${LABELS[key] || key}</label>
+                            <input type="number" id="input-${model.id}-${key}" class="form-input" value="${valDisplay}" 
+                                oninput="updateInput(${model.id}, '${key}', this.value)">
+                        </div>
+                    `;
+                }
+                inputsHTML += '</div>';
+
+                div.innerHTML = `
+                    <div class="model-header">
+                        <span class="model-number">MODELO ${idx + 1}</span>
+                        ${models.length > 1 ? `<button class="btn-icon" onclick="removeModel(${model.id})">×</button>` : ''}
+                    </div>
+                    ${selectHTML}
+                    ${inputsHTML}
+                `;
+                
+                container.appendChild(div);
+            });
+
+            // Update add button
+            const btn = document.getElementById('btn-add');
+            btn.disabled = models.length >= 3;
+            btn.innerHTML = models.length >= 3 ? 
+                '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg> Máximo 3 modelos' :
+                '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Agregar Modelo (Máx. 3)';
+        }
+
+        // Update all results
+        function updateResults() {
+            const results = models.map(m => calculateModel(m.machineId, m.inputs));
+            
+            // Calculate totals
+            const totalInv = results.reduce((sum, r) => sum + r.inv, 0);
+            const totalSales = results.reduce((sum, r) => sum + r.sales, 0);
+            const totalCosts = results.reduce((sum, r) => sum + r.costs, 0);
+            const totalProfit = results.reduce((sum, r) => sum + r.profit, 0);
+            const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+
+            // Update total card
+            document.getElementById('total-profit').textContent = fmtMoney(totalProfit);
+            document.getElementById('total-investment').textContent = fmtMoney(totalInv);
+            document.getElementById('total-payback').textContent = totalPayback === Infinity ? '∞' : fmtNum(totalPayback) + ' meses';
+
+            // Update table
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = results.map((r, i) => `
+                <tr>
+                    <td style="color:${COLORS[i]}">${MACHINES[models[i].machineId].name}</td>
+                    <td class="text-right">${fmtMoney(r.inv)}</td>
+                    <td class="text-right">${fmtMoney(r.sales)}</td>
+                    <td class="text-right">${fmtMoney(r.costs)}</td>
+                    <td class="text-right ${r.profit >= 0 ? 'highlight-positive' : 'highlight-negative'}">${fmtMoney(r.profit)}</td>
+                    <td class="text-right">${r.payback === Infinity ? '∞' : fmtNum(r.payback)}</td>
+                    <td class="text-right">${fmtNum(r.roi, 0)}%</td>
+                </tr>
+            `).join('');
+
+            // Update footer (totals)
+            const totalROI = totalInv > 0 ? ((totalProfit * 12) / totalInv) * 100 : 0;
+            document.getElementById('table-footer').innerHTML = `
+                <tr style="border-top: 2px solid var(--border);">
+                    <td>TOTAL</td>
+                    <td class="text-right">${fmtMoney(totalInv)}</td>
+                    <td class="text-right">${fmtMoney(totalSales)}</td>
+                    <td class="text-right">${fmtMoney(totalCosts)}</td>
+                    <td class="text-right highlight-positive">${fmtMoney(totalProfit)}</td>
+                    <td class="text-right">${totalPayback === Infinity ? '∞' : fmtNum(totalPayback)}</td>
+                    <td class="text-right">${fmtNum(totalROI, 0)}%</td>
+                </tr>
+            `;
+
+            // Update charts
+            updateCharts(results);
+            updateLegend();
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Profit Chart
+            const ctx1 = document.getElementById('profitChart').getContext('2d');
+            profitChart = new Chart(ctx1, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: (v) => '$' + (v/1000).toFixed(0) + 'k'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#9ca3af' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Payback Chart
+            const ctx2 = document.getElementById('paybackChart').getContext('2d');
+            paybackChart = new Chart(ctx2, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: (v) => v + ' meses'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#9ca3af' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Cash Flow Chart (Line chart)
+            const ctx3 = document.getElementById('cashFlowChart').getContext('2d');
+            cashFlowChart = new Chart(ctx3, {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#9ca3af',
+                                usePointStyle: true,
+                                boxWidth: 10
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#9ca3af',
+                            borderColor: '#374151',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + fmtMoney(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: (v) => '$' + (v/1000).toFixed(0) + 'k'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            title: {
+                                display: true,
+                                text: 'Flujo Acumulado',
+                                color: '#9ca3af'
+                            }
+                        },
+                        x: {
+                            ticks: { 
+                                color: '#9ca3af',
+                                maxRotation: 45
+                            },
+                            grid: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Meses',
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update charts
+        function updateCharts(results) {
+            const labels = models.map((m, i) => `Modelo ${i+1}`);
+            
+            // Update profit chart
+            profitChart.data = {
+                labels: labels,
+                datasets: [{
+                    data: results.map(r => r.profit),
+                    backgroundColor: COLORS.slice(0, models.length),
+                    borderRadius: 6
+                }]
+            };
+            profitChart.update();
+
+            // Update payback chart
+            paybackChart.data = {
+                labels: labels,
+                datasets: [{
+                    data: results.map(r => r.payback === Infinity ? 0 : r.payback),
+                    backgroundColor: COLORS.slice(0, models.length),
+                    borderRadius: 6
+                }]
+            };
+            paybackChart.update();
+
+            // Update cash flow chart (24 months projection)
+            const monthLabels = Array.from({length: 24}, (_, i) => `Mes ${i+1}`);
+            const cashFlowDatasets = results.map((r, i) => {
+                const data = [];
+                let accumulated = -r.inv; // Start with negative investment
+                for (let month = 1; month <= 24; month++) {
+                    accumulated += r.profit;
+                    data.push(accumulated);
+                }
+                return {
+                    label: `M${i+1}: ${MACHINES[models[i].machineId].name}`,
+                    data: data,
+                    borderColor: COLORS[i],
+                    backgroundColor: COLORS[i] + '20',
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 6
+                };
+            });
+
+            // Add break-even line (y=0)
+            cashFlowDatasets.push({
+                label: 'Punto de Equilibrio',
+                data: Array(24).fill(0),
+                borderColor: '#ef4444',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            });
+
+            cashFlowChart.data = {
+                labels: monthLabels,
+                datasets: cashFlowDatasets
+            };
+            cashFlowChart.update();
+        }
+
+        // Update legend
+        function updateLegend() {
+            const legend = document.getElementById('chart-legend');
+            legend.innerHTML = models.map((m, i) => `
+                <div class="legend-item">
+                    <div class="legend-color" style="background:${COLORS[i]}"></div>
+                    <span>${MACHINES[m.machineId].name}</span>
+                </div>
+            `).join('');
+        }
+
+        // Reset all
+        function resetAll() {
+            models = [];
+            addModel();
+        }
+
+        // Export to WhatsApp
+        function exportToWhatsapp() {
+            const results = models.map(m => calculateModel(m.machineId, m.inputs));
+            const totalInv = results.reduce((s, r) => s + r.inv, 0);
+            const totalProfit = results.reduce((s, r) => s + r.profit, 0);
+            const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+
+            let text = "*🧮 CALCULADORA ROI PREMIUM*\n\n";
+            text += "*RESUMEN TOTAL:*\n";
+            text += `💰 Inversión: ${fmtMoney(totalInv)}\n`;
+            text += `📈 Utilidad Mensual: ${fmtMoney(totalProfit)}\n`;
+            text += `🗓️ Recuperación: ${totalPayback === Infinity ? '∞' : fmtNum(totalPayback) + ' meses'}\n\n`;
+            text += "*DESGLOSE POR MODELO:*\n\n";
+
+            models.forEach((m, i) => {
+                const r = results[i];
+                text += `*${i+1}. ${MACHINES[m.machineId].name}*\n`;
+                text += `   Inversión: ${fmtMoney(r.inv)}\n`;
+                text += `   Utilidad Bruta: ${fmtMoney(r.sales)}\n`;
+                text += `   Utilidad Neta: ${fmtMoney(r.profit)}\n`;
+                text += `   Recup.: ${r.payback === Infinity ? '∞' : fmtNum(r.payback) + ' meses'}\n\n`;
+            });
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert("¡Copiado al portapapeles! Listo para pegar en WhatsApp.");
+            });
+        }
+
+        // Generate PDF
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            
+            const results = models.map(m => calculateModel(m.machineId, m.inputs));
+            const totalInv = results.reduce((s, r) => s + r.inv, 0);
+            const totalSales = results.reduce((s, r) => s + r.sales, 0);
+            const totalCosts = results.reduce((s, r) => s + r.costs, 0);
+            const totalProfit = results.reduce((s, r) => s + r.profit, 0);
+            const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+            const totalROI = totalInv > 0 ? ((totalProfit * 12) / totalInv) * 100 : 0;
+            const fecha = new Date().toLocaleDateString('es-MX');
+
+            // ===== HEADER =====
+            doc.setFillColor(255, 255, 255);
+            doc.rect(0, 0, 210, 297, 'F');
+            
+            // AGRANEL Logo text
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(28);
+            doc.setFont('helvetica', 'bold');
+            doc.text('AGRANEL', 15, 20);
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100, 100, 100);
+            doc.text('Reporte de Inversión y Rentabilidad', 15, 27);
+            
+            // Date
+            doc.setFontSize(9);
+            doc.text('Fecha de Emisión', 160, 15);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text(fecha, 160, 22);
+
+            // Separator line
+            doc.setDrawColor(200, 200, 200);
+            doc.line(15, 32, 195, 32);
+
+            // ===== TABLE =====
+            let y = 45;
+            
+            // Table header background
+            doc.setFillColor(245, 245, 245);
+            doc.rect(15, y-5, 180, 10, 'F');
+            
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(100, 100, 100);
+            doc.text('CONCEPTO', 20, y);
+            
+            let colX = 75;
+            models.forEach((m, i) => {
+                doc.text(`M${i+1}: ${MACHINES[m.machineId].name.toUpperCase()}`, colX, y);
+                colX += 45;
+            });
+
+            y += 12;
+
+            // Table rows
+            const rowData = [
+                { label: 'Utilidad Bruta', key: 'sales', format: 'money' },
+                { label: 'Costos Fijos', key: 'costs', format: 'money' },
+                { label: 'Utilidad Neta Mensual', key: 'profit', format: 'money', highlight: true },
+                { label: 'Inversión', key: 'inv', format: 'money' },
+                { label: 'Recuperación (Meses)', key: 'payback', format: 'number' },
+                { label: 'Recuperación Media', key: 'paybackAvg', format: 'text' },
+                { label: 'ROI Anual', key: 'roi', format: 'percent' }
+            ];
+
+            rowData.forEach((row, rowIdx) => {
+                // Alternate row background
+                if (rowIdx % 2 === 0) {
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(15, y-4, 180, 8, 'F');
+                }
+
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(80, 80, 80);
+                doc.text(row.label, 20, y);
+
+                colX = 75;
+                results.forEach((r, i) => {
+                    let value;
+                    if (row.key === 'paybackAvg') {
+                        value = r.payback === Infinity ? '-' : fmtNum(r.payback) + ' meses';
+                    } else if (row.key === 'payback') {
+                        value = r.payback === Infinity ? '∞' : fmtNum(r.payback);
+                    } else if (row.format === 'money') {
+                        value = fmtMoney(r[row.key]);
+                    } else if (row.format === 'percent') {
+                        value = fmtNum(r[row.key], 0) + '%';
+                    } else {
+                        value = fmtNum(r[row.key]);
+                    }
+
+                    // Highlight profit row
+                    if (row.highlight) {
+                        doc.setTextColor(16, 185, 129);
+                        doc.setFont('helvetica', 'bold');
+                    } else {
+                        doc.setTextColor(0, 0, 0);
+                        doc.setFont('helvetica', 'normal');
+                    }
+                    
+                    doc.text(value, colX, y);
+                    colX += 45;
+                });
+
+                y += 10;
+            });
+
+            y += 5;
+
+            // ===== CHARTS SECTION =====
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(80, 80, 80);
+            doc.text('FLUJO ACUMULADO (24 MESES)', 15, y);
+
+            // Cash Flow Chart
+            const cashFlowCanvas = document.getElementById('cashFlowChart');
+            const cashFlowImg = cashFlowCanvas.toDataURL('image/png');
+            doc.addImage(cashFlowImg, 'PNG', 15, y + 5, 90, 60);
+
+            // ROI Chart
+            const roiCanvas = document.getElementById('paybackChart');
+            const roiImg = roiCanvas.toDataURL('image/png');
+            doc.addImage(roiImg, 'PNG', 110, y + 5, 85, 60);
+
+            // Legend
+            y += 75;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            let legendX = 20;
+            models.forEach((m, i) => {
+                doc.setFillColor(...hexToRgb(COLORS[i]));
+                doc.rect(legendX, y, 5, 5, 'F');
+                doc.setTextColor(0, 0, 0);
+                doc.text(`M${i+1}: ${MACHINES[m.machineId].name}`, legendX + 8, y + 4);
+                legendX += 60;
+            });
+
+            // Footer disclaimer
+            y += 15;
+            doc.setDrawColor(200, 200, 200);
+            doc.line(15, y, 195, y);
+            y += 8;
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text('Este documento muestra proyecciones financieras estimadas. Los resultados reales pueden variar según condiciones', 105, y, { align: 'center' });
+            doc.text('de mercado y operación.', 105, y + 4, { align: 'center' });
+            doc.text('Generado con Calculadora ROI Premium', 105, y + 10, { align: 'center' });
+
+            doc.save('reporte-roi-agranel.pdf');
+        }
+
+        // Helper function to convert hex to RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16)
+            ] : [0, 0, 0];
+        }
+
+        // Initialize
+        initCharts();
+        addModel();
+    </script>
+</body>
+</html>
