@@ -81,6 +81,10 @@
         @media (max-width: 1024px) {
             .main-grid { grid-template-columns: 1fr; }
         }
+        @media (max-width: 768px) {
+            .models-panel { width: 100%; }
+            .models-panel .card { width: 100%; }
+        }
         /* Cards */
         .card {
             background: var(--surface);
@@ -124,6 +128,7 @@
             margin-bottom: 1rem;
             position: relative;
             transition: all 0.3s ease;
+            overflow-x: hidden;
         }
         .model-item:hover {
             border-color: var(--primary);
@@ -265,6 +270,11 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            align-items: center;
+        }
+        .results-section > * {
+            width: 100%;
+            max-width: 100%;
         }
         /* Total Card - Highlighted */
         .total-card {
@@ -307,7 +317,7 @@
             background: #ffffff;
             border: 1px solid var(--border);
             border-radius: 12px;
-            overflow: hidden;
+            overflow-x: auto;
         }
         .table-header {
             background: var(--surface-light);
@@ -344,28 +354,58 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
         }
         @media (max-width: 768px) {
-            .charts-grid { grid-template-columns: 1fr; }
             .container { padding: 1rem; }
-            .header h1 { font-size: 2rem; }
-            .total-value { font-size: 2rem; }
-            .recovery-hero-value { font-size: 1.5rem; }
+            .header { padding: 1.5rem 0; }
+            .header h1 { font-size: 1.8rem; }
+            .header p { font-size: 0.95rem; }
+            .main-grid { gap: 1rem; }
+            .charts-grid { grid-template-columns: 1fr; }
             .form-grid { grid-template-columns: 1fr; }
-            table { font-size: 0.85rem; }
-            th, td { padding: 0.75rem 0.5rem; }
+            .card { padding: 1rem; }
+            .total-value { font-size: 2.2rem; }
+            .recovery-hero { padding: 1rem; }
+            .recovery-hero-value { font-size: 1.5rem; }
+            .recovery-hero-label { font-size: 0.75rem; }
+            .table-wrapper { overflow-x: auto; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 0.6rem 0.4rem; }
+            .chart-container { height: 280px; padding: 1rem; }
+            .cash-flow-container { height: 300px; padding: 1rem; }
+            .chart-title { font-size: 0.85rem; }
         }
         @media (max-width: 480px) {
-            .container { padding: 0.75rem; }
-            .header h1 { font-size: 1.5rem; }
-            .header p { font-size: 0.9rem; }
-            .card { padding: 1rem; }
-            .total-value { font-size: 1.75rem; }
+            .container { padding: 0.5rem; }
+            .header { padding: 1rem 0; }
+            .header h1 { font-size: 1.4rem; }
+            .header p { font-size: 0.85rem; }
+            .card { padding: 0.75rem; border-radius: 12px; }
+            .card-header { margin-bottom: 1rem; padding-bottom: 0.75rem; }
+            .total-card { padding: 1.25rem; border-radius: 12px; }
+            .total-label { font-size: 0.8rem; }
+            .total-value { font-size: 1.8rem; }
+            .recovery-hero { padding: 0.75rem 1rem; margin-top: 1rem; }
+            .recovery-hero-label { font-size: 0.7rem; }
             .recovery-hero-value { font-size: 1.25rem; }
-            .chart-container { height: 280px; }
-            .cash-flow-container { height: 300px; }
-            .legend { gap: 0.75rem; }
-            .legend-item { font-size: 0.75rem; }
+            .form-group { margin-bottom: 0.75rem; }
+            .form-label { font-size: 0.75rem; }
+            .form-input { padding: 0.6rem 0.75rem; font-size: 0.9rem; }
+            .btn { padding: 0.75rem 1rem; font-size: 0.9rem; }
+            .action-buttons { flex-direction: column; gap: 0.75rem; }
+            .action-buttons .btn { width: 100%; }
+            .model-item { padding: 1rem; margin-bottom: 0.75rem; border-radius: 10px; }
+            .model-header { margin-bottom: 0.75rem; }
+            .table-wrapper { font-size: 0.75rem; border-radius: 8px; }
+            .table-header { padding: 0.75rem 0.5rem; font-size: 0.75rem; }
+            th, td { padding: 0.5rem 0.3rem; }
+            .chart-container { height: 240px; padding: 0.75rem; border-radius: 10px; }
+            .cash-flow-container { height: 260px; padding: 0.75rem; border-radius: 10px; }
+            .chart-title { font-size: 0.8rem; margin-bottom: 0.75rem; }
+            .legend { gap: 0.5rem; }
+            .legend-item { font-size: 0.7rem; }
         }
         .chart-container {
             background: #ffffff;
@@ -373,6 +413,9 @@
             border-radius: 12px;
             padding: 1.5rem;
             height: 350px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .chart-title {
             font-size: 0.95rem;
@@ -407,6 +450,9 @@
             padding: 1.5rem;
             height: 400px;
             margin-bottom: 1.5rem;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .recovery-hero {
             margin-top: 1.5rem;
