@@ -1143,9 +1143,10 @@
             doc.setFillColor(255, 255, 255);
             doc.rect(0, 0, 210, 297, 'F');
             
-            // Add logo
-            if (typeof LOGO_DATA_URL !== 'undefined') {
-                doc.addImage(LOGO_DATA_URL, 'PNG', 15, 5, 38, 20);
+            // Add logo - get from DOM img element (works on any server)
+            const headerLogo = document.querySelector('.header img');
+            if (headerLogo && headerLogo.src) {
+                doc.addImage(headerLogo.src, 'PNG', 15, 5, 38, 20);
             } else {
                 doc.setTextColor(0, 0, 0);
                 doc.setFontSize(28);
