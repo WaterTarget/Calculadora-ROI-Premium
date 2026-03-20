@@ -740,6 +740,9 @@
             if (models.length >= 3) return;
             const firstKey = Object.keys(MACHINES)[0];
             const newInputs = deepCopy(MACHINES[firstKey]);
+            if (models.length > 0) {
+                newInputs.renta = 0; // Rent is 0 for 2nd and 3rd models
+            }
             models.push({
                 id: Date.now(),
                 machineId: firstKey,
@@ -764,6 +767,9 @@
             const model = models[index];
             model.machineId = newMachineId;
             const newInputs = deepCopy(MACHINES[newMachineId]);
+            if (index > 0) {
+                newInputs.renta = 0; // Rent is 0 for 2nd and 3rd models
+            }
             model.inputs = newInputs;
             renderModels();
             updateResults();
@@ -917,13 +923,14 @@
         function updateResults() {
             const rawResults = models.map(m => calculateModel(m.machineId, m.inputs));
             
-            // Rent: divide equally among all models
+            // Opción C: Only model 1's rent is divided among all models
             const numModels = models.length;
-            if (numModels > 0) {
-                const totalRent = models.reduce((sum, m) => sum + (m.inputs.renta || 0), 0);
-                const rentPerModel = totalRent / numModels;
+            if (numModels > 1) {
+                const rentToDivide = models[0].inputs.renta || 0; // Only model 1's rent
+                const rentPerModel = rentToDivide / numModels;
                 rawResults.forEach((r, i) => {
-                    r.costs = r.costs + rentPerModel;
+                    // Subtract original rent, then add divided rent
+                    r.costs = r.costs - (models[i].inputs.renta || 0) + rentPerModel;
                     r.profit = r.sales - r.costs;
                     r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
                     r.roi = r.inv > 0 ? ((r.profit * 12) / r.inv) * 100 : 0;
@@ -1121,13 +1128,14 @@
 
         function exportToWhatsapp() {
             const results = models.map(m => calculateModel(m.machineId, m.inputs));
-            // Rent: divide equally among all models
+            // Opción C: Only model 1's rent is divided among all models
             const numModels = models.length;
-            if (numModels > 0) {
-                const totalRent = models.reduce((sum, m) => sum + (m.inputs.renta || 0), 0);
-                const rentPerModel = totalRent / numModels;
+            if (numModels > 1) {
+                const rentToDivide = models[0].inputs.renta || 0;
+                const rentPerModel = rentToDivide / numModels;
                 results.forEach((r, i) => {
-                    r.costs = r.costs + rentPerModel;
+                    // Subtract original rent, then add divided rent
+                    r.costs = r.costs - (models[i].inputs.renta || 0) + rentPerModel;
                     r.profit = r.sales - r.costs;
                     r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
                 });
@@ -1155,13 +1163,14 @@
              
             const results = models.map(m => calculateModel(m.machineId, m.inputs));
             
-            // Rent: divide equally among all models
+            // Opción C: Only model 1's rent is divided among all models
             const numModels = models.length;
-            if (numModels > 0) {
-                const totalRent = models.reduce((sum, m) => sum + (m.inputs.renta || 0), 0);
-                const rentPerModel = totalRent / numModels;
+            if (numModels > 1) {
+                const rentToDivide = models[0].inputs.renta || 0;
+                const rentPerModel = rentToDivide / numModels;
                 results.forEach((r, i) => {
-                    r.costs = r.costs + rentPerModel;
+                    // Subtract original rent, then add divided rent
+                    r.costs = r.costs - (models[i].inputs.renta || 0) + rentPerModel;
                     r.profit = r.sales - r.costs;
                     r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
                     r.roi = r.inv > 0 ? ((r.profit * 12) / r.inv) * 100 : 0;
