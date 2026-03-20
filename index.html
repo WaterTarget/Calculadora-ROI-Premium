@@ -740,9 +740,6 @@
             if (models.length >= 3) return;
             const firstKey = Object.keys(MACHINES)[0];
             const newInputs = deepCopy(MACHINES[firstKey]);
-            if (models.length > 0) {
-                newInputs.renta = 0; // Rent is 0 for 2nd and 3rd models
-            }
             models.push({
                 id: Date.now(),
                 machineId: firstKey,
@@ -767,9 +764,6 @@
             const model = models[index];
             model.machineId = newMachineId;
             const newInputs = deepCopy(MACHINES[newMachineId]);
-            if (index > 0) {
-                newInputs.renta = 0; // Rent is 0 for 2nd and 3rd models
-            }
             model.inputs = newInputs;
             renderModels();
             updateResults();
@@ -923,17 +917,16 @@
         function updateResults() {
             const rawResults = models.map(m => calculateModel(m.machineId, m.inputs));
             
-            // Rent: only model 1 pays rent, models 2+ have rent removed
+            // Rent: divide equally among all models
             const numModels = models.length;
-            if (numModels > 1) {
+            if (numModels > 0) {
+                const totalRent = models.reduce((sum, m) => sum + (m.inputs.renta || 0), 0);
+                const rentPerModel = totalRent / numModels;
                 rawResults.forEach((r, i) => {
-                    if (i > 0) {
-                        const modelRent = models[i].inputs.renta || 0;
-                        r.costs = r.costs - modelRent;
-                        r.profit = r.sales - r.costs;
-                        r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
-                        r.roi = r.inv > 0 ? ((r.profit * 12) / r.inv) * 100 : 0;
-                    }
+                    r.costs = r.costs + rentPerModel;
+                    r.profit = r.sales - r.costs;
+                    r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
+                    r.roi = r.inv > 0 ? ((r.profit * 12) / r.inv) * 100 : 0;
                 });
             }
             const results = rawResults;
@@ -1128,16 +1121,15 @@
 
         function exportToWhatsapp() {
             const results = models.map(m => calculateModel(m.machineId, m.inputs));
-            // Rent: only model 1 pays rent, models 2+ have rent removed
+            // Rent: divide equally among all models
             const numModels = models.length;
-            if (numModels > 1) {
+            if (numModels > 0) {
+                const totalRent = models.reduce((sum, m) => sum + (m.inputs.renta || 0), 0);
+                const rentPerModel = totalRent / numModels;
                 results.forEach((r, i) => {
-                    if (i > 0) {
-                        const modelRent = models[i].inputs.renta || 0;
-                        r.costs = r.costs - modelRent;
-                        r.profit = r.sales - r.costs;
-                        r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
-                    }
+                    r.costs = r.costs + rentPerModel;
+                    r.profit = r.sales - r.costs;
+                    r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
                 });
             }
             const totalInv = results.reduce((s, r) => s + r.inv, 0);
@@ -1160,20 +1152,19 @@
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            
+             
             const results = models.map(m => calculateModel(m.machineId, m.inputs));
             
-            // Rent: only model 1 pays rent, models 2+ have rent removed
+            // Rent: divide equally among all models
             const numModels = models.length;
-            if (numModels > 1) {
+            if (numModels > 0) {
+                const totalRent = models.reduce((sum, m) => sum + (m.inputs.renta || 0), 0);
+                const rentPerModel = totalRent / numModels;
                 results.forEach((r, i) => {
-                    if (i > 0) {
-                        const modelRent = models[i].inputs.renta || 0;
-                        r.costs = r.costs - modelRent;
-                        r.profit = r.sales - r.costs;
-                        r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
-                        r.roi = r.inv > 0 ? ((r.profit * 12) / r.inv) * 100 : 0;
-                    }
+                    r.costs = r.costs + rentPerModel;
+                    r.profit = r.sales - r.costs;
+                    r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
+                    r.roi = r.inv > 0 ? ((r.profit * 12) / r.inv) * 100 : 0;
                 });
             }
 
