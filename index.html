@@ -1,381 +1,1322 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Calculadora ROI Premium | AGRANEL</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        :root {
-            --bg: #ffffff;
-            --surface: #f8fafc;
-            --surface-light: #f1f5f9;
-            --border: #e2e8f0;
-            --primary: #2563eb;
-            --primary-light: #3b82f6;
-            --accent: #7c3aed;
-            --text-main: #0f172a;
-            --text-secondary: #64748b;
-            --success: #059669;
-            --warning: #d97706;
-            --danger: #dc2626;
-            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            --gradient-success: linear-gradient(135deg, #059669 0%, #047857 100%);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+<style>
+/* CSS ADAPTADO PARA ODOO - PREFIJO roi- */
+/* Eliminado Google Fonts - usar fuentes del tema */
+:root {
+    --roi-bg: #ffffff;
+    --roi-surface: #f8fafc;
+    --roi-surface-light: #f1f5f9;
+    --roi-border: #e2e8f0;
+    --roi-primary: #2563eb;
+    --roi-primary-light: #3b82f6;
+    --roi-accent: #7c3aed;
+    --roi-text-main: #0f172a;
+    --roi-text-secondary: #64748b;
+    --roi-success: #059669;
+    --roi-warning: #d97706;
+    --roi-danger: #dc2626;
+    --roi-gradient-primary: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    --roi-gradient-success: linear-gradient(135deg, #059669 0%, #047857 100%);
+    --roi-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --roi-shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+}
+.roi-root * { box-sizing: border-box; margin: 0; padding: 0; }
+.roi-root {
+    font-family: sans-serif;
+    background: var(--roi-bg);
+    color: var(--roi-text-main);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+.roi-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+.roi-header {
+    text-align: center;
+    padding: 3rem 0;
+    position: relative;
+}
+.roi-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+.roi-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: var(--roi-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+.roi-header p {
+    color: var(--roi-text-secondary);
+    font-size: 1.1rem;
+}
+.roi-main-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 2rem;
+}
+@media (max-width: 1024px) {
+    .roi-main-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .roi-models-panel { width: 100%; }
+    .roi-models-panel .roi-card { width: 100%; }
+}
+.roi-card {
+    background: var(--roi-surface);
+    border: 1px solid var(--roi-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--roi-shadow);
+    position: relative;
+    overflow: hidden;
+}
+.roi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+}
+.roi-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--roi-border);
+}
+.roi-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.roi-model-item {
+    background: var(--roi-surface-light);
+    border: 1px solid var(--roi-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    position: relative;
+    transition: all 0.3s ease;
+    overflow-x: hidden;
+}
+.roi-model-item:hover {
+    border-color: var(--roi-primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+.roi-model-item.model-1 { border-left: 3px solid #3b82f6; }
+.roi-model-item.model-2 { border-left: 3px solid #f59e0b; }
+.roi-model-item.model-3 { border-left: 3px solid #10b981; }
+.roi-model-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.roi-model-number {
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.model-1 .roi-model-number { color: #2563eb; }
+.model-2 .roi-model-number { color: #d97706; }
+.model-3 .roi-model-number { color: #059669; }
+.roi-btn-icon {
+    background: rgba(239, 68, 68, 0.1);
+    border: none;
+    color: var(--roi-danger);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+.roi-btn-icon:hover {
+    background: var(--roi-danger);
+    color: white;
+}
+.roi-form-group {
+    margin-bottom: 1rem;
+}
+.roi-form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--roi-text-secondary);
+    margin-bottom: 0.4rem;
+}
+.roi-form-select, .roi-form-input {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--roi-border);
+    color: var(--roi-text-main);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+.roi-form-select:focus, .roi-form-input:focus {
+    outline: none;
+    border-color: var(--roi-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.roi-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+.roi-btn {
+    padding: 0.875rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.roi-btn-add {
+    width: 100%;
+    background: transparent;
+    border: 2px dashed var(--roi-border);
+    color: var(--roi-text-secondary);
+    margin-top: 0.5rem;
+}
+.roi-btn-add:hover:not(:disabled) {
+    border-color: var(--roi-primary);
+    color: var(--roi-primary);
+    background: rgba(37, 99, 235, 0.05);
+}
+.roi-btn-add:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.roi-btn-whatsapp {
+    background: #25d366;
+    color: white;
+    flex: 1;
+}
+.roi-btn-whatsapp:hover {
+    background: #128c7e;
+    transform: translateY(-2px);
+}
+.roi-btn-pdf {
+    background: var(--roi-danger);
+    color: white;
+    flex: 1;
+}
+.roi-btn-pdf:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+.roi-btn-reset {
+    background: var(--roi-surface-light);
+    color: var(--roi-text-secondary);
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--roi-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.roi-btn-reset:hover {
+    color: var(--roi-text-main);
+    background: var(--roi-border);
+}
+.roi-action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+.roi-results-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+}
+.roi-results-section > * {
+    width: 100%;
+    max-width: 100%;
+}
+.roi-total-card {
+    background: var(--roi-gradient-primary);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.roi-total-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    animation: roi-pulse 4s ease-in-out infinite;
+}
+@keyframes roi-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+.roi-total-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+.roi-total-value {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #ffffff;
+    position: relative;
+}
+.roi-table-wrapper {
+    background: #ffffff;
+    border: 1px solid var(--roi-border);
+    border-radius: 12px;
+    overflow-x: auto;
+}
+.roi-table-header {
+    background: var(--roi-surface-light);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--roi-border);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.roi-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.roi-table th, .roi-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--roi-border);
+}
+.roi-table th {
+    background: var(--roi-surface-light);
+    font-weight: 600;
+    color: var(--roi-text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.roi-table tr:hover {
+    background: var(--roi-surface);
+}
+.roi-text-right { text-align: right; }
+.roi-highlight-positive { color: var(--roi-success); font-weight: 600; }
+.roi-highlight-negative { color: var(--roi-danger); }
+.roi-charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+@media (max-width: 768px) {
+    .roi-container { padding: 1rem; }
+    .roi-header { padding: 1.5rem 0; }
+    .roi-header h1 { font-size: 1.8rem; }
+    .roi-header p { font-size: 0.95rem; }
+    .roi-main-grid { gap: 1rem; }
+    .roi-charts-grid { grid-template-columns: 1fr; }
+    .roi-form-grid { grid-template-columns: 1fr; }
+    .roi-card { padding: 1rem; }
+    .roi-total-value { font-size: 2.2rem; }
+    .roi-recovery-hero { padding: 1rem; }
+    .roi-recovery-hero-value { font-size: 1.5rem; }
+    .roi-recovery-hero-label { font-size: 0.75rem; }
+    .roi-table-wrapper { overflow-x: auto; }
+    .roi-table { font-size: 0.8rem; }
+    .roi-table th, .roi-table td { padding: 0.6rem 0.4rem; }
+    .roi-chart-container { height: 250px; padding: 0.75rem; }
+    .roi-cash-flow-container { height: 250px; padding: 0.75rem; }
+    .roi-chart-title { font-size: 0.85rem; }
+}
+@media (max-width: 480px) {
+    .roi-container { padding: 0.5rem; }
+    .roi-header { padding: 1rem 0; }
+    .roi-header h1 { font-size: 1.4rem; }
+    .roi-header p { font-size: 0.85rem; }
+    .roi-card { padding: 0.75rem; border-radius: 12px; }
+    .roi-card-header { margin-bottom: 1rem; padding-bottom: 0.75rem; }
+    .roi-total-card { padding: 1.25rem; border-radius: 12px; }
+    .roi-total-label { font-size: 0.8rem; }
+    .roi-total-value { font-size: 1.8rem; }
+    .roi-recovery-hero { padding: 0.75rem 1rem; margin-top: 1rem; }
+    .roi-recovery-hero-label { font-size: 0.7rem; }
+    .roi-recovery-hero-value { font-size: 1.25rem; }
+    .roi-form-group { margin-bottom: 0.75rem; }
+    .roi-form-label { font-size: 0.75rem; }
+    .roi-form-input { padding: 0.6rem 0.75rem; font-size: 0.9rem; }
+    .roi-btn { padding: 0.75rem 1rem; font-size: 0.9rem; }
+    .roi-action-buttons { flex-direction: column; gap: 0.75rem; }
+    .roi-action-buttons .roi-btn { width: 100%; }
+    .roi-model-item { padding: 1rem; margin-bottom: 0.75rem; border-radius: 10px; }
+    .roi-model-header { margin-bottom: 0.75rem; }
+    .roi-table-wrapper { font-size: 0.75rem; border-radius: 8px; }
+    .roi-table-header { padding: 0.75rem 0.5rem; font-size: 0.75rem; }
+    .roi-table th, .roi-table td { padding: 0.5rem 0.3rem; }
+    .roi-chart-container { height: 200px; padding: 0.5rem; border-radius: 8px; }
+    .roi-cash-flow-container { height: 200px; padding: 0.5rem; border-radius: 8px; }
+    .roi-chart-title { font-size: 0.8rem; margin-bottom: 0.75rem; }
+    .roi-legend { gap: 0.5rem; }
+    .roi-legend-item { font-size: 0.7rem; }
+}
+.roi-chart-container {
+    background: #ffffff;
+    border: 1px solid var(--roi-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 350px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.roi-chart-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #475569;
+}
+.roi-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+.roi-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+.roi-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+.roi-cash-flow-container {
+    background: #ffffff;
+    border: 1px solid var(--roi-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 400px;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.roi-recovery-hero {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: rgba(37, 99, 235, 0.15);
+    border-radius: 12px;
+    position: relative;
+}
+.roi-recovery-hero-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+}
+.roi-recovery-hero-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-top: 0.25rem;
+    position: relative;
+    color: #ffffff;
+}
+</style>
+
+<!-- NOTA: Los scripts CDN se incluyen al final. Si Odoo los bloquea, súbelas como activos en Configuracion > Tecnico > Activos -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- NOTA: logo.js debe subirse al editor de activos de Odoo si los botones de WhatsApp/PDF no funcionan -->
+<!-- <script src="/web/assets/XXXX/logo.js"></script> -->
+
+<div class="roi-root">
+    <div class="roi-container">
+        <header class="roi-header">
+            <!-- REEMPLAZAR: Subir el logo a Odoo y pegar el ID aqui -->
+            <img src="/web/image/PON_AQUI_EL_ID_DE_ODOO" alt="AGRANEL" style="height: 60px; margin-bottom: 1rem;">
+            <h1>Calculadora ROI Premium</h1>
+            <p>Suma hasta 3 modelos de negocio y visualiza resultados individuales y totales</p>
+        </header>
+
+        <div class="roi-main-grid">
+            <div class="roi-models-panel">
+                <div class="roi-card">
+                    <div class="roi-card-header">
+                        <div class="roi-card-title">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="8" x2="12" y2="16"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                            </svg>
+                            Modelos
+                        </div>
+                        <button class="roi-btn-reset" onclick="roiResetAll()">Reiniciar</button>
+                    </div>
+                    
+                    <div id="roi-models-container"></div>
+                    
+                    <button id="roi-btn-add" class="roi-btn roi-btn-add" onclick="roiAddModel()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Agregar Modelo (Máx. 3)
+                    </button>
+
+                    <div class="roi-action-buttons">
+                        <button class="roi-btn roi-btn-whatsapp" onclick="roiExportToWhatsapp()">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326z"/>
+                            </svg>
+                            WhatsApp
+                        </button>
+                        <button class="roi-btn roi-btn-pdf" onclick="roiGeneratePDF()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roi-results-section" id="roi-results-section">
+                <div class="roi-total-card">
+                    <div class="roi-total-label">UTILIDAD TOTAL MENSUAL</div>
+                    <div class="roi-total-value" id="roi-total-profit">$0</div>
+                    <div class="roi-recovery-hero">
+                        <div class="roi-recovery-hero-label">⏱ RECUPERACIÓN DE INVERSIÓN</div>
+                        <div class="roi-recovery-hero-value" id="roi-total-payback">—</div>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; color: #ffffff;">
+                        Inversión Total: <span id="roi-total-investment">$0</span>
+                    </div>
+                </div>
+
+                <div class="roi-table-wrapper">
+                    <div class="roi-table-header">Desglose por Modelo</div>
+                    <table class="roi-table" id="roi-details-table">
+                        <thead>
+                            <tr>
+                                <th>Modelo</th>
+                                <th class="roi-text-right">Inversión</th>
+                                <th class="roi-text-right">Venta Mensual</th>
+                                <th class="roi-text-right">Costo Op.</th>
+                                <th class="roi-text-right">Utilidad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roi-table-body"></tbody>
+                        <tfoot id="roi-table-footer" style="background: var(--roi-surface-light); font-weight: 700;"></tfoot>
+                    </table>
+                </div>
+
+                <div class="roi-cash-flow-container">
+                    <div class="roi-chart-title">Flujo de Efectivo Acumulado (24 Meses) - Proyección de Retorno</div>
+                    <canvas id="roi-cashFlowChart"></canvas>
+                </div>
+
+                <div class="roi-charts-grid">
+                    <div class="roi-chart-container">
+                        <div class="roi-chart-title">Utilidad de los modelos</div>
+                        <canvas id="roi-profitChart"></canvas>
+                    </div>
+                    <div class="roi-chart-container">
+                        <div class="roi-chart-title">Tiempo de Recuperación (Meses)</div>
+                        <canvas id="roi-paybackChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="roi-legend" id="roi-chart-legend"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============== CODIGO JS ADAPTADO PARA ODOO ==============
+// Prefijo 'roi' añadido a todas las funciones para evitar conflictos
+
+(function() {
+    const PRODUCT_NAMES = [
+        "Producto 1", "Producto 2", "Producto 3", "Producto 4", 
+        "Producto 5", "Producto 6", "Producto 7", "Producto 8", 
+        "Producto 9", "Producto 10", "Producto 11", "Producto 12"
+    ];
+
+    const PRODUCT_NAMES_CROQUETAS = [
+        "Producto 1", "Producto 2", "Producto 3", "Producto 4"
+    ];
+
+    const MACHINES = {
+        vending_hielo: { name: "Hielo", inv: 255000, price_ice: 25, loads_m: 25, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 },
+        vending_agua: { name: "Agua", inv: 119000, price_gar: 15, gar_m: 50, luz: 1500, agua: 1500, mnt: 1500, renta: 0 },
+        vending_croquetas: { 
+            name: "Vending Croquetas/Granos (4 Prod)", inv: 95000, days: 30, 
+            p1_c: 17, p1_v: 25.50, p1_k: 8,
+            p2_c: 22, p2_v: 33, p2_k: 12,
+            p3_c: 16, p3_v: 24, p3_k: 6,
+            p4_c: 28, p4_v: 42, p4_k: 10,
+            luz_mnt: 500, renta: 3000 
+        },
+        kiosko_agua: { name: "Kiosko Agua", inv: 79000, price_gar: 15, gar_m: 50, luz: 1500, agua: 1500, mnt: 1500, renta: 5000 },
+        kiosko_duo: { name: "Kiosko Duo", inv: 244000, price_ice: 25, loads_m: 25, price_gar: 15, gar_m: 50, luz: 5250, agua: 1698.75, mnt: 1698.75, renta: 5000 },
+        v_limpieza_6: { 
+            name: "V. Limpieza (6 Prod)", inv: 49000, days: 30, 
+            p1_c: 8, p1_v: 20, p1_l: 25,
+            p2_c: 7, p2_v: 16, p2_l: 25,
+            p3_c: 9, p3_v: 20, p3_l: 25,
+            p4_c: 5, p4_v: 12, p4_l: 25,
+            p5_c: 5, p5_v: 12, p5_l: 25,
+            p6_c: 6, p6_v: 15, p6_l: 25,
+            luz_mnt: 500, renta: 2000 
+        },
+        v_limpieza_12: { 
+            name: "V. Limpieza (12 Prod)", inv: 88000, days: 30, 
+            p1_c: 8, p1_v: 20, p1_l: 20,
+            p2_c: 7, p2_v: 16, p2_l: 20,
+            p3_c: 9, p3_v: 20, p3_l: 20,
+            p4_c: 5, p4_v: 12, p4_l: 20,
+            p5_c: 5, p5_v: 12, p5_l: 20,
+            p6_c: 6, p6_v: 15, p6_l: 20,
+            p7_c: 8, p7_v: 20, p7_l: 20,
+            p8_c: 6, p8_v: 20, p8_l: 20,
+            p9_c: 6, p9_v: 12, p9_l: 20,
+            p10_c: 7, p10_v: 15, p10_l: 20,
+            p11_c: 7, p11_v: 15, p11_l: 20,
+            p12_c: 5, p12_v: 15, p12_l: 20,
+            luz_mnt: 500, renta: 2500 
+        },
+        v_croquetas: { 
+            name: "V. Croquetas y Granos (4 Prod)", inv: 79000, days: 30, 
+            p1_c: 17, p1_v: 25.50, p1_k: 8,
+            p2_c: 22, p2_v: 33, p2_k: 12,
+            p3_c: 16, p3_v: 24, p3_k: 6,
+            p4_c: 28, p4_v: 42, p4_k: 10,
+            luz_mnt: 500, renta: 2500 
+        },
+        v_hielo: { name: "V. Hielo", inv: 217000, price_ice: 25, loads_m: 25, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 }
+    };
+
+    const CATEGORIES = {
+        "Vendings": ["vending_hielo", "vending_agua", "vending_croquetas"],
+        "Ventanas/Kioskos": ["kiosko_agua", "kiosko_duo", "v_limpieza_6", "v_limpieza_12", "v_croquetas", "v_hielo"]
+    };
+
+    const COLORS = ['#3b82f6', '#f59e0b', '#10b981'];
+    
+    const LABELS = {
+        inv: "$ Inversión", price_ice: "Precio hielo 5Kg ($)", loads_m: "Bolsas/día", price_gar: "Precio garrafón ($)",
+        gar_m: "Garrafones/día", luz: "Luz Mensual ($)", agua: "Agua Mensual ($)", mnt: "Mantenimiento Mensual ($)",
+        luz_mnt: "Luz y Mant. Fijo Mensual ($)", renta: "Renta Mensual ($)", days: "Días operativos al mes"
+    };
+
+    let models = [];
+    let profitChart, paybackChart, cashFlowChart;
+
+    const fmtMoney = (n) => {
+        if (!isFinite(n) || isNaN(n)) return "$0";
+        return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
+    };
+
+    const fmtNum = (n, d = 1) => {
+        if (!isFinite(n) || isNaN(n)) return "—";
+        return n.toFixed(d);
+    };
+
+    const fmtWithCommas = (n) => {
+        if (!isFinite(n) || isNaN(n)) return "0";
+        return Math.round(n).toLocaleString('es-MX');
+    };
+
+    const deepCopy = (obj) => JSON.parse(JSON.stringify(obj));
+
+    function calculateModel(machineId, inputs) {
+        const x = inputs;
+        let sales = 0, costs = 0;
+
+        if (machineId === 'kiosko_duo') {
+            sales = (x.price_ice * x.loads_m * 30) + (x.price_gar * x.gar_m * 30);
+            costs = x.luz + x.agua + x.mnt + x.renta;
+        } else if (machineId === 'kiosko_agua' || machineId === 'vending_agua') {
+            sales = x.price_gar * x.gar_m * 30;
+            costs = x.luz + x.agua + x.mnt + x.renta;
+        } else if (machineId === 'vending_hielo' || machineId === 'v_hielo') {
+            sales = x.price_ice * x.loads_m * 30;
+            costs = x.luz + x.agua + x.mnt + x.renta;
+        } else if (machineId === 'v_limpieza_6' || machineId === 'v_limpieza_12') {
+            const numProducts = machineId === 'v_limpieza_6' ? 6 : 12;
+            let ventaDiaria = 0;
+            let costoMaterialDiario = 0;
+            for(let i=1; i<=numProducts; i++) {
+                ventaDiaria += x[`p${i}_v`] * x[`p${i}_l`];
+                costoMaterialDiario += x[`p${i}_c`] * x[`p${i}_l`];
+            }
+            sales = ventaDiaria * x.days;
+            costs = (costoMaterialDiario * x.days) + x.luz_mnt + x.renta;
+        } else if (machineId === 'vending_croquetas' || machineId === 'v_croquetas') {
+            const numProducts = 4;
+            let ventaDiaria = 0;
+            let costoMaterialDiario = 0;
+            for(let i=1; i<=numProducts; i++) {
+                ventaDiaria += x[`p${i}_v`] * x[`p${i}_k`];
+                costoMaterialDiario += x[`p${i}_c`] * x[`p${i}_k`];
+            }
+            sales = ventaDiaria * x.days;
+            costs = (costoMaterialDiario * x.days) + x.luz_mnt + x.renta;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            line-height: 1.6;
-            overflow-x: hidden;
+
+        const profit = sales - costs;
+        const payback = profit > 0 ? x.inv / profit : Infinity;
+        const roi = x.inv > 0 ? ((profit * 12) / x.inv) * 100 : 0;
+
+        return { inv: x.inv, sales, costs, profit, payback, roi };
+    }
+
+    window.roiAddModel = function() {
+        if (models.length >= 3) return;
+        const firstKey = Object.keys(MACHINES)[0];
+        const newInputs = deepCopy(MACHINES[firstKey]);
+        if (models.length > 0) {
+            newInputs.renta = 0;
         }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1.5rem;
+        models.push({
+            id: Date.now(),
+            machineId: firstKey,
+            inputs: newInputs
+        });
+        renderModels();
+        updateResults();
+    };
+
+    window.roiRemoveModel = function(id) {
+        if (models.length <= 1) {
+            alert("Debe haber al menos un modelo");
+            return;
         }
-        .header {
-            text-align: center;
-            padding: 2rem 0;
-            position: relative;
+        models = models.filter(m => m.id !== id);
+        renderModels();
+        updateResults();
+    };
+
+    window.roiChangeMachine = function(id, newMachineId) {
+        const index = models.findIndex(m => m.id === id);
+        const model = models[index];
+        model.machineId = newMachineId;
+        const newInputs = deepCopy(MACHINES[newMachineId]);
+        if (index > 0) {
+            newInputs.renta = 0;
         }
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            height: 400px;
-            background: radial-gradient(ellipse, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
-            pointer-events: none;
+        model.inputs = newInputs;
+        renderModels();
+        updateResults();
+    };
+
+    window.roiUpdateInput = function(id, key, value) {
+        const model = models.find(m => m.id === id);
+        model.inputs[key] = parseFloat(value.replace(/,/g, '')) || 0;
+
+        if (key === 'loads_m' || key === 'gar_m') {
+            let recalculado = false;
+            
+            if ((model.machineId === 'vending_hielo' || model.machineId === 'v_hielo') && model.inputs.luz !== undefined) {
+                model.inputs.luz = model.inputs.loads_m * 30 * 5.00;
+                model.inputs.agua = model.inputs.loads_m * 30 * 0.265;
+                model.inputs.mnt = model.inputs.loads_m * 30 * 0.265;
+                recalculado = true;
+            } 
+            else if ((model.machineId === 'vending_agua' || model.machineId === 'kiosko_agua') && model.inputs.luz !== undefined) {
+                model.inputs.luz = model.inputs.gar_m * 30 * 1.00;
+                model.inputs.agua = model.inputs.gar_m * 30 * 1.00;
+                model.inputs.mnt = model.inputs.gar_m * 30 * 1.00;
+                recalculado = true;
+            } 
+            else if (model.machineId === 'kiosko_duo' && model.inputs.luz !== undefined) {
+                model.inputs.luz = (model.inputs.loads_m * 30 * 5.00) + (model.inputs.gar_m * 30 * 1.00);
+                model.inputs.agua = (model.inputs.loads_m * 30 * 0.265) + (model.inputs.gar_m * 30 * 1.00);
+                model.inputs.mnt = (model.inputs.loads_m * 30 * 0.265) + (model.inputs.gar_m * 30 * 1.00);
+                recalculado = true;
+            }
+
+            if (recalculado) {
+                const inputLuz = document.getElementById(`roi-input-${model.id}-luz`);
+                const inputAgua = document.getElementById(`roi-input-${model.id}-agua`);
+                const inputMnt = document.getElementById(`roi-input-${model.id}-mnt`);
+                
+                if (inputLuz) inputLuz.value = Number.isInteger(model.inputs.luz) ? model.inputs.luz : model.inputs.luz.toFixed(2);
+                if (inputAgua) inputAgua.value = Number.isInteger(model.inputs.agua) ? model.inputs.agua : model.inputs.agua.toFixed(2);
+                if (inputMnt) inputMnt.value = Number.isInteger(model.inputs.mnt) ? model.inputs.mnt : model.inputs.mnt.toFixed(2);
+            }
         }
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-            position: relative;
+        updateResults();
+    };
+
+    function renderModels() {
+        const container = document.getElementById('roi-models-container');
+        container.innerHTML = '';
+
+        models.forEach((model, idx) => {
+            const div = document.createElement('div');
+            div.className = `roi-model-item model-${idx + 1}`;
+            
+            let selectHTML = `<select class="roi-form-select" onchange="roiChangeMachine(${model.id}, this.value)" style="margin-bottom:1rem;">`;
+            for (const [catName, machines] of Object.entries(CATEGORIES)) {
+                selectHTML += `<optgroup label="${catName}">`;
+                machines.forEach(mId => {
+                    selectHTML += `<option value="${mId}" ${model.machineId === mId ? 'selected' : ''}>${MACHINES[mId].name}</option>`;
+                });
+                selectHTML += `</optgroup>`;
+            }
+            selectHTML += '</select>';
+
+            let inputsHTML = '';
+
+            if (model.machineId === 'v_limpieza_6' || model.machineId === 'v_limpieza_12' || model.machineId === 'vending_croquetas' || model.machineId === 'v_croquetas') {
+                
+                const isLimpieza = model.machineId.includes('limpieza');
+                let numProducts = 6;
+                if (model.machineId === 'v_limpieza_12') numProducts = 12;
+                if (model.machineId.includes('croquetas')) numProducts = 4;
+                
+                const namesArray = isLimpieza ? PRODUCT_NAMES : PRODUCT_NAMES_CROQUETAS;
+                const unitType = isLimpieza ? 'l' : 'k';
+                const unitLabel = isLimpieza ? 'Lts/día' : 'Kg/día';
+                
+                inputsHTML += `<div style="margin-bottom: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 8px; border: 1px solid var(--roi-border);">`;
+                inputsHTML += `<div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; color: var(--roi-primary-light);">Configuración de Productos por ${isLimpieza ? 'Litro' : 'Kilo'}</div>`;
+
+                for(let i=1; i<=numProducts; i++) {
+                    inputsHTML += `<div style="font-size: 0.8rem; font-weight: 500; color: var(--roi-text-main); margin-top: 0.8rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.2rem;">${i}. ${namesArray[i-1]}</div>`;
+                    inputsHTML += `<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">`;
+
+                    ['c', 'v', unitType].forEach(type => {
+                        const key = `p${i}_${type}`;
+                        const valDisplay = fmtWithCommas(model.inputs[key]);
+                        let placeholder = type === 'c' ? 'Costo $' : type === 'v' ? 'Venta $' : unitLabel;
+
+                        inputsHTML += `
+                            <div class="roi-form-group" style="margin-bottom: 0;">
+                                <label class="roi-form-label" style="font-size: 0.7rem; color: var(--roi-text-secondary);">${placeholder}</label>
+                                <input type="text" id="roi-input-${model.id}-${key}" class="roi-form-input" style="padding: 0.5rem; font-size: 0.85rem; text-align: center;" value="${valDisplay}"
+                                    oninput="roiUpdateInput(${model.id}, '${key}', this.value)">
+                            </div>
+                        `;
+                    });
+                    inputsHTML += `</div>`;
+                }
+                inputsHTML += `</div>`;
+
+                inputsHTML += '<div class="roi-form-grid">';
+                for (const [key, value] of Object.entries(model.inputs)) {
+                    if (key === 'name' || key.match(/^p\d+_[cvlk]$/)) continue;
+                    const valDisplay = fmtWithCommas(value);
+                    inputsHTML += `
+                        <div class="roi-form-group">
+                            <label class="roi-form-label">${LABELS[key] || key}</label>
+                            <input type="text" id="roi-input-${model.id}-${key}" class="roi-form-input" value="${valDisplay}"
+                                oninput="roiUpdateInput(${model.id}, '${key}', this.value)">
+                        </div>
+                    `;
+                }
+                inputsHTML += '</div>';
+
+            } else {
+                inputsHTML += '<div class="roi-form-grid">';
+                for (const [key, value] of Object.entries(model.inputs)) {
+                    if (key === 'name') continue;
+                    const valDisplay = fmtWithCommas(value);
+                    inputsHTML += `
+                        <div class="roi-form-group">
+                            <label class="roi-form-label">${LABELS[key] || key}</label>
+                            <input type="text" id="roi-input-${model.id}-${key}" class="roi-form-input" value="${valDisplay}"
+                                oninput="roiUpdateInput(${model.id}, '${key}', this.value)">
+                        </div>
+                    `;
+                }
+                inputsHTML += '</div>';
+            }
+
+            div.innerHTML = `
+                <div class="roi-model-header">
+                    <span class="roi-model-number">MODELO ${idx + 1}</span>
+                    ${models.length > 1 ? `<button class="roi-btn-icon" onclick="roiRemoveModel(${model.id})">×</button>` : ''}
+                </div>
+                ${selectHTML}
+                ${inputsHTML}
+            `;
+            
+            container.appendChild(div);
+        });
+
+        const btn = document.getElementById('roi-btn-add');
+        btn.disabled = models.length >= 3;
+        btn.innerHTML = models.length >= 3 ? 
+            '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg> Máximo 3 modelos' :
+            '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Agregar Modelo (Máx. 3)';
+    }
+
+    function updateResults() {
+        const rawResults = models.map(m => calculateModel(m.machineId, m.inputs));
+        
+        const numModels = models.length;
+        if (numModels > 1) {
+            const rentToDivide = models[0].inputs.renta || 0;
+            const rentPerModel = rentToDivide / numModels;
+            rawResults.forEach((r, i) => {
+                r.costs = r.costs - (models[i].inputs.renta || 0) + rentPerModel;
+                r.profit = r.sales - r.costs;
+                r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
+                r.roi = r.inv > 0 ? ((r.profit * 12) / r.inv) * 100 : 0;
+            });
         }
-        .header p {
-            color: var(--text-secondary);
-            font-size: 1rem;
+        const results = rawResults;
+
+        const totalInv = results.reduce((sum, r) => sum + r.inv, 0);
+        const totalSales = results.reduce((sum, r) => sum + r.sales, 0);
+        const totalCosts = results.reduce((sum, r) => sum + r.costs, 0);
+        const totalProfit = results.reduce((sum, r) => sum + r.profit, 0);
+        const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+
+        document.getElementById('roi-total-profit').textContent = fmtMoney(totalProfit);
+        document.getElementById('roi-total-investment').textContent = fmtMoney(totalInv);
+        document.getElementById('roi-total-payback').textContent = totalPayback === Infinity ? '∞' : fmtNum(totalPayback) + ' meses';
+
+        const tbody = document.getElementById('roi-table-body');
+        tbody.innerHTML = results.map((r, i) => `
+            <tr>
+                <td style="color:${COLORS[i]}">${MACHINES[models[i].machineId].name}</td>
+                <td class="roi-text-right">${fmtMoney(r.inv)}</td>
+                <td class="roi-text-right">${fmtMoney(r.sales)}</td>
+                <td class="roi-text-right">${fmtMoney(r.costs)}</td>
+                <td class="roi-text-right ${r.profit >= 0 ? 'roi-highlight-positive' : 'roi-highlight-negative'}">${fmtMoney(r.profit)}</td>
+            </tr>
+        `).join('');
+
+        document.getElementById('roi-table-footer').innerHTML = `
+            <tr style="border-top: 2px solid var(--roi-border);">
+                <td>TOTAL</td>
+                <td class="roi-text-right">${fmtMoney(totalInv)}</td>
+                <td class="roi-text-right">${fmtMoney(totalSales)}</td>
+                <td class="roi-text-right">${fmtMoney(totalCosts)}</td>
+                <td class="roi-text-right roi-highlight-positive">${fmtMoney(totalProfit)}</td>
+            </tr>
+        `;
+
+        updateCharts(results);
+        updateLegend();
+    }
+
+    function initCharts() {
+        const ctx1 = document.getElementById('roi-profitChart').getContext('2d');
+        profitChart = new Chart(ctx1, {
+            type: 'bar',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: { color: '#64748b', callback: (v) => '$' + (v/1000).toFixed(0) + 'k' },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: { stacked: true, ticks: { color: '#64748b' }, grid: { display: false } }
+                }
+            }
+        });
+
+        const ctx2 = document.getElementById('roi-paybackChart').getContext('2d');
+        paybackChart = new Chart(ctx2, {
+            type: 'bar',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: { color: '#64748b', callback: (v) => v + ' meses' },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: { stacked: true, ticks: { color: '#64748b' }, grid: { display: false } }
+                }
+            }
+        });
+
+        const ctx3 = document.getElementById('roi-cashFlowChart').getContext('2d');
+        cashFlowChart = new Chart(ctx3, {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#64748b', usePointStyle: true, boxWidth: 10 } },
+                    tooltip: {
+                        mode: 'index', intersect: false, backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#0f172a', bodyColor: '#64748b', borderColor: '#e2e8f0', borderWidth: 1,
+                        callbacks: { label: function(context) { return context.dataset.label + ': ' + fmtMoney(context.parsed.y); } }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { color: '#64748b', callback: (v) => '$' + (v/1000).toFixed(0) + 'k' },
+                        grid: { color: 'rgba(0,0,0,0.08)' },
+                        title: { display: true, text: 'Flujo Acumulado', color: '#64748b' }
+                    },
+                    x: { ticks: { color: '#64748b', maxRotation: 45 }, grid: { display: false }, title: { display: true, text: 'Meses', color: '#64748b' } }
+                }
+            }
+        });
+    }
+
+    function updateCharts(results) {
+        const chart1 = document.getElementById('roi-profitChart');
+        const ctx1 = chart1.getContext('2d');
+        const height1 = chart1.height || 300;
+        const gradient1 = ctx1.createLinearGradient(0, height1, 0, 0);
+
+        const chart2 = document.getElementById('roi-paybackChart');
+        const ctx2 = chart2.getContext('2d');
+        const height2 = chart2.height || 300;
+        const gradient2 = ctx2.createLinearGradient(0, height2, 0, 0);
+
+        const activeColors = results.map((r, i) => COLORS[i]);
+        if (activeColors.length > 1) {
+            const step = 1 / (activeColors.length - 1);
+            activeColors.forEach((color, i) => {
+                gradient1.addColorStop(i * step, color);
+                gradient2.addColorStop(i * step, color);
+            });
+        } else {
+            gradient1.addColorStop(0, activeColors[0]);
+            gradient1.addColorStop(1, activeColors[0]);
+            gradient2.addColorStop(0, activeColors[0]);
+            gradient2.addColorStop(1, activeColors[0]);
         }
-        .header img {
-            max-width: 200px;
-            height: auto;
-            margin-bottom: 1rem;
+
+        const totalProfit = results.reduce((s, r) => s + r.profit, 0);
+        profitChart.data = {
+            labels: ['Total'],
+            datasets: [{
+                label: 'Utilidad',
+                data: [totalProfit],
+                backgroundColor: gradient1,
+                borderRadius: 6
+            }]
+        };
+        profitChart.update();
+
+        const totalInv = results.reduce((s, r) => s + r.inv, 0);
+        const totalPayback = totalProfit > 0 ? totalInv / totalProfit : 0;
+        paybackChart.data = {
+            labels: ['Total'],
+            datasets: [{
+                label: 'Meses',
+                data: [totalPayback],
+                backgroundColor: gradient2,
+                borderRadius: 6
+            }]
+        };
+        paybackChart.update();
+
+        const monthLabels = Array.from({length: 24}, (_, i) => `Mes ${i+1}`);
+        const totalInvAll = results.reduce((s, r) => s + r.inv, 0);
+        const totalProfitAll = results.reduce((s, r) => s + r.profit, 0);
+        let combinedData = [];
+        let accumulated = -totalInvAll;
+        for (let month = 1; month <= 24; month++) {
+            accumulated += totalProfitAll;
+            combinedData.push(accumulated);
         }
-        .main-grid {
-            display: grid;
-            grid-template-columns: 420px 1fr;
-            gap: 1.5rem;
+        const cashFlowDatasets = [
+            { label: 'Flujo Acumulado Total', data: combinedData, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 6, borderWidth: 3 },
+            { label: 'Punto de Equilibrio', data: Array(24).fill(0), borderColor: '#ef4444', borderDash: [5, 5], pointRadius: 0, fill: false }
+        ];
+        cashFlowChart.data = { labels: monthLabels, datasets: cashFlowDatasets };
+        cashFlowChart.update();
+    }
+
+    function updateLegend() {
+        const legend = document.getElementById('roi-chart-legend');
+        legend.innerHTML = models.map((m, i) => `
+            <div class="roi-legend-item">
+                <div class="roi-legend-color" style="background:${COLORS[i]}"></div>
+                <span>${MACHINES[m.machineId].name}</span>
+            </div>
+        `).join('');
+    }
+
+    window.roiResetAll = function() {
+        models = [];
+        roiAddModel();
+    };
+
+    window.roiExportToWhatsapp = function() {
+        const results = models.map(m => calculateModel(m.machineId, m.inputs));
+        const numModels = models.length;
+        if (numModels > 1) {
+            const rentToDivide = models[0].inputs.renta || 0;
+            const rentPerModel = rentToDivide / numModels;
+            results.forEach((r, i) => {
+                r.costs = r.costs - (models[i].inputs.renta || 0) + rentPerModel;
+                r.profit = r.sales - r.costs;
+                r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
+            });
         }
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.25rem;
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
+        const totalInv = results.reduce((s, r) => s + r.inv, 0);
+        const totalProfit = results.reduce((s, r) => s + r.profit, 0);
+        const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+
+        let text = "*🧮 CALCULADORA ROI PREMIUM*\n\n*RESUMEN TOTAL:*\n";
+        text += `💰 Inversión: ${fmtMoney(totalInv)}\n📈 Utilidad Mensual: ${fmtMoney(totalProfit)}\n🗓️ Recuperación: ${totalPayback === Infinity ? '∞' : fmtNum(totalPayback) + ' meses'}\n\n*DESGLOSE POR MODELO:*\n\n`;
+
+        models.forEach((m, i) => {
+            const r = results[i];
+            text += `*${i+1}. ${MACHINES[m.machineId].name}*\n   Inversión: ${fmtMoney(r.inv)}\n   Venta Mensual: ${fmtMoney(r.sales)}\n   Costo Op.: ${fmtMoney(r.costs)}\n   Utilidad: ${fmtMoney(r.profit)}\n\n`;
+        });
+
+        navigator.clipboard.writeText(text).then(() => {
+            alert("\u00a1Copiado al portapapeles! Listo para pegar en WhatsApp.");
+        });
+    };
+
+    window.roiGeneratePDF = function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+         
+        const results = models.map(m => calculateModel(m.machineId, m.inputs));
+        
+        const numModels = models.length;
+        if (numModels > 1) {
+            const rentToDivide = models[0].inputs.renta || 0;
+            const rentPerModel = rentToDivide / numModels;
+            results.forEach((r, i) => {
+                r.costs = r.costs - (models[i].inputs.renta || 0) + rentPerModel;
+                r.profit = r.sales - r.costs;
+                r.payback = r.profit > 0 ? r.inv / r.profit : Infinity;
+                r.roi = r.inv > 0 ? ((r.profit * 12) / r.inv) * 100 : 0;
+            });
         }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+
+        const totalInv = results.reduce((s, r) => s + r.inv, 0);
+        const totalSales = results.reduce((s, r) => s + r.sales, 0);
+        const totalCosts = results.reduce((s, r) => s + r.costs, 0);
+        const totalProfit = results.reduce((s, r) => s + r.profit, 0);
+        const totalPayback = totalProfit > 0 ? totalInv / totalProfit : Infinity;
+        const totalROI = totalInv > 0 ? ((totalProfit * 12) / totalInv) * 100 : 0;
+        const fecha = new Date().toLocaleDateString('es-MX');
+
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, 210, 297, 'F');
+        
+        try {
+            const headerLogo = document.querySelector('.roi-header img');
+            if (headerLogo && headerLogo.src && !headerLogo.src.includes('PON_AQUI')) {
+                const canvas = document.createElement('canvas');
+                canvas.width = headerLogo.naturalWidth || headerLogo.width;
+                canvas.height = headerLogo.naturalHeight || headerLogo.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(headerLogo, 0, 0);
+                const logoDataUrl = canvas.toDataURL('image/png');
+                doc.addImage(logoDataUrl, 'PNG', 15, 5, 38, 20);
+            } else {
+                throw new Error('No logo found');
+            }
+        } catch (e) {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(28);
+            doc.setFont('helvetica', 'bold');
+            doc.text('AGRANEL', 15, 22);
         }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.25rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 100, 100);
+        doc.text('Reporte de Inversión y Rentabilidad', 15, 32);
+        
+        doc.setFontSize(9);
+        doc.text('Fecha de Emisión', 160, 15);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        doc.text(fecha, 160, 22);
+
+        doc.setDrawColor(200, 200, 200);
+        doc.line(15, 38, 195, 38);
+
+        let y = 48;
+        
+        doc.setFillColor(245, 245, 245);
+        doc.rect(15, y-6, 180, 12, 'F');
+        
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text('CONCEPTO', 18, y);
+        
+        let colX = 72;
+        models.forEach((m, i) => {
+            const machineName = `M${i+1}: ${MACHINES[m.machineId].name.toUpperCase()}`;
+            const textLines = doc.splitTextToSize(machineName, 38);
+            doc.text(textLines, colX, y);
+            colX += 46;
+        });
+
+        y += 14;
+
+        const rowData = [
+            { label: 'Inversión', key: 'inv', format: 'money' },
+            { label: 'Venta Mensual', key: 'sales', format: 'money' },
+            { label: 'Costo Op.', key: 'costs', format: 'money' },
+            { label: 'Utilidad', key: 'profit', format: 'money', highlight: true }
+        ];
+
+        rowData.forEach((row, rowIdx) => {
+            if (rowIdx % 2 === 0) {
+                doc.setFillColor(250, 250, 250);
+                doc.rect(15, y-5, 180, 10, 'F');
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text(row.label, 18, y);
+
+            colX = 72;
+            results.forEach((r, i) => {
+                let value;
+                if (row.format === 'money') {
+                    value = fmtMoney(r[row.key]);
+                } else if (row.format === 'percent') {
+                    value = fmtNum(r[row.key], 0) + '%';
+                } else {
+                    value = fmtNum(r[row.key]);
+                }
+
+                if (row.highlight) {
+                    doc.setTextColor(16, 185, 129);
+                    doc.setFont('helvetica', 'bold');
+                } else {
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont('helvetica', 'normal');
+                }
+                
+                doc.text(value, colX, y);
+                colX += 46;
+            });
+
+            y += 10;
+        });
+
+        y += 5;
+
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text('FLUJO ACUMULADO (24 MESES)', 15, y);
+
+        doc.setFontSize(10);
+        doc.text('TIEMPO DE RECUPERACIÓN (MESES)', 110, y);
+
+        const cashFlowCanvas = document.getElementById('roi-cashFlowChart');
+        const cashFlowImg = cashFlowCanvas.toDataURL('image/png');
+        doc.addImage(cashFlowImg, 'PNG', 15, y + 8, 90, 55);
+
+        const roiCanvas = document.getElementById('roi-paybackChart');
+        const roiImg = roiCanvas.toDataURL('image/png');
+        doc.addImage(roiImg, 'PNG', 110, y + 8, 85, 50);
+
+        y += 70;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(15, y, 195, y);
+        y += 8;
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Este documento muestra proyecciones financieras estimadas. Los resultados reales pueden variar segun condiciones', 105, y, { align: 'center' });
+        doc.text('de mercado y operacion.', 105, y + 4, { align: 'center' });
+        doc.text('Generado con Calculadora ROI Premium', 105, y + 10, { align: 'center' });
+
+        doc.save('reporte-roi-agranel.pdf');
+    };
+
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [0, 0, 0];
+    }
+
+    // Inicializacion
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            roiAddModel();
+        });
+    } else {
+        initCharts();
+        roiAddModel();
+    }
+
+    // POSTMESSAGE PARA RESIZE DINÁMICO EN ODOO
+    function roiSendHeightToParent() {
+        if (window.parent) {
+            // Se calcula la altura real del documento + pequeño margen
+            const docHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+            window.parent.postMessage({ type: 'iframe-resize', height: docHeight }, '*');
         }
-        .card-title {
-            font-size: 1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .model-item {
-            background: var(--surface-light);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            position: relative;
-            transition: all 0.3s ease;
-            overflow-x: hidden;
-        }
-        .model-item:hover {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-        }
-        .model-item.model-1 { border-left: 3px solid #3b82f6; }
-        .model-item.model-2 { border-left: 3px solid #f59e0b; }
-        .model-item.model-3 { border-left: 3px solid #10b981; }
-        .model-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-        .model-number {
-            font-weight: 700;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .model-1 .model-number { color: #2563eb; }
-        .model-2 .model-number { color: #d97706; }
-        .model-3 .model-number { color: #059669; }
-        .btn-icon {
-            background: rgba(239, 68, 68, 0.1);
-            border: none;
-            color: var(--danger);
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.2s;
-        }
-        .btn-icon:hover {
-            background: var(--danger);
-            color: white;
-        }
-        .form-group {
-            margin-bottom: 0.75rem;
-        }
-        .form-label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 0.3rem;
-        }
-        .form-select, .form-input {
-            width: 100%;
-            background: #ffffff;
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 0.6rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        .form-select:focus, .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-        }
-        .btn {
-            padding: 0.75rem 1.25rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .btn-add {
-            width: 100%;
-            background: transparent;
-            border: 2px dashed var(--border);
-            color: var(--text-secondary);
-            margin-top: 0.5rem;
-        }
-        .btn-add:hover:not(:disabled) {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(37, 99, 235, 0.05);
-        }
-        .btn-add:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .btn-whatsapp {
-            background: #25d366;
-            color: white;
-            flex: 1;
-        }
-        .btn-whatsapp:hover {
-            background: #128c7e;
-            transform: translateY(-1px);
-        }
-        .btn-pdf {
-            background: var(--danger);
-            color: white;
-            flex: 1;
-        }
-        .btn-pdf:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-        .btn-reset {
-            background: var(--surface-light);
-            color: var(--text-secondary);
-            padding: 0.4rem 0.75rem;
-            font-size: 0.8rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-reset:hover {
-            color: var(--text-main);
-            background: var(--border);
-        }
-        .action-buttons {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1.25rem;
-        }
-        .results-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            align-items: center;
-        }
-        .results-section > * {
-            width: 100%;
-            max-width: 100%;
-        }
-        .total-card {
-            background: var(--gradient-primary);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .total-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        .total-label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #ffffff;
-            margin-bottom: 0.5rem;
-            position: relative;
-        }
-        .total-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #ffffff;
-            position: relative;
-        }
-        .recovery-hero {
-            margin-top: 1rem;
-            padding: 1rem 1.25rem;
-            background: rgba(37, 99, 235, 0.15);
-            border-radius: 10px;
-            position: relative;
-        }
-        .recovery-hero-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #ffffff;
-        }
-        .recovery-hero-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-top: 0.25rem;
-            position: relative;
-            color: #ffffff;
-        }
-        .table-wrapper {
-            background: #ffffff;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow-x: auto;
-        }
-        .table-header {
-            background: var(--surface-light);
-            padding: 0.75rem 1.25rem;
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 0.75rem 1.25rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        th {
-            background: var(--surface-light);
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        tr:hover {
-            background: var(--surface);
-        }
-        .text-right { text-align: right; }
-        .highlight-positive { color: var(--success); font-weight: 600; }
-        .highlight-negative { color: var(--danger); }
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .chart-container {
-            background: #ffffff;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1rem;
-            height: 280px;
-            width: 100%;
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-        .chart-title {
-            font-size
+    }
+
+    // Observador para detectar cambios reales en el tamaño del contenedor
+    if (window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(() => roiSendHeightToParent());
+        resizeObserver.observe(document.body);
+    } else {
+        window.addEventListener('load', roiSendHeightToParent);
+        window.addEventListener('resize', roiSendHeightToParent);
+        const mutationObserver = new MutationObserver(roiSendHeightToParent);
+        mutationObserver.observe(document.body, { attributes: true, childList: true, subtree: true });
+    }
+
+})();
+</script>
