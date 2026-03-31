@@ -598,7 +598,7 @@
         // Base de Datos de Máquinas ACTUALIZADA
         const MACHINES = {
             // VENDINGS
-            vending_hielo: { name: "Hielo", inv: 255000, price_ice: 25, loads_m: 25, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 },
+            vending_hielo: { name: "Hielo", inv: 216000, price_ice: 25, loads_m: 25, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 },
             vending_agua: { name: "Agua", inv: 119000, price_gar: 15, gar_m: 50, luz: 1500, agua: 1500, mnt: 1500, renta: 0 },
             
             // Vending Croquetas/Café (Máximo 4 Productos)
@@ -612,8 +612,9 @@
             },
             
             // VENTANAS/KIOSKOS
-            kiosko_agua: { name: "Kiosko Agua", inv: 79000, price_gar: 15, gar_m: 50, luz: 1500, agua: 1500, mnt: 1500, renta: 5000 },
-            kiosko_duo: { name: "Kiosko Duo", inv: 244000, price_ice: 25, loads_m: 25, price_gar: 15, gar_m: 50, luz: 5250, agua: 1698.75, mnt: 1698.75, renta: 5000 },
+            kiosko_agua: { name: "Kiosko Agua", inv: 99000, price_gar: 15, gar_m: 50, luz: 1500, agua: 1500, mnt: 1500, renta: 5000 },
+            kiosko_duo: { name: "Kiosko Duo", inv: 285000, price_ice: 25, loads_m: 25, price_gar: 15, gar_m: 50, luz: 5250, agua: 1698.75, mnt: 1698.75, renta: 5000 },
+            centro_llenado_duo: { name: "Centro de llenado DUO", inv: 199000, price_ice: 25, loads_m: 25, price_gar: 15, gar_m: 50, luz: 5250, agua: 1698.75, mnt: 1698.75, renta: 5000 },
             
             // Ventana Limpieza 6 Productos
             v_limpieza_6: { 
@@ -655,12 +656,12 @@
                 luz_mnt: 500, renta: 2500 
             },
 
-            v_hielo: { name: "V. Hielo", inv: 217000, price_ice: 25, loads_m: 25, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 }
+            v_hielo: { name: "V. Hielo", inv: 185000, price_ice: 25, loads_m: 25, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 }
         };
 
         const CATEGORIES = {
             "Vendings": ["vending_hielo", "vending_agua", "vending_croquetas"],
-            "Ventanas/Kioskos": ["kiosko_agua", "kiosko_duo", "v_limpieza_6", "v_limpieza_12", "v_croquetas", "v_hielo"]
+            "Ventanas/Kioskos": ["kiosko_agua", "kiosko_duo", "centro_llenado_duo", "v_limpieza_6", "v_limpieza_12", "v_croquetas", "v_hielo"]
         };
 
         const COLORS = ['#3b82f6', '#f59e0b', '#10b981'];
@@ -697,7 +698,7 @@
             const x = inputs;
             let sales = 0, costs = 0;
 
-            if (machineId === 'kiosko_duo') {
+            if (machineId === 'kiosko_duo' || machineId === 'centro_llenado_duo') {
                 sales = (x.price_ice * x.loads_m * 30) + (x.price_gar * x.gar_m * 30);
                 costs = x.luz + x.agua + x.mnt + x.renta;
             } else if (machineId === 'kiosko_agua' || machineId === 'vending_agua') {
@@ -794,7 +795,7 @@
                     model.inputs.mnt = model.inputs.gar_m * 30 * 1.00;
                     recalculado = true;
                 } 
-                else if (model.machineId === 'kiosko_duo' && model.inputs.luz !== undefined) {
+                else if ((model.machineId === 'kiosko_duo' || model.machineId === 'centro_llenado_duo') && model.inputs.luz !== undefined) {
                     model.inputs.luz = (model.inputs.loads_m * 30 * 5.00) + (model.inputs.gar_m * 30 * 1.00);
                     model.inputs.agua = (model.inputs.loads_m * 30 * 0.265) + (model.inputs.gar_m * 30 * 1.00);
                     model.inputs.mnt = (model.inputs.loads_m * 30 * 0.265) + (model.inputs.gar_m * 30 * 1.00);
@@ -875,11 +876,12 @@
                     for (const [key, value] of Object.entries(model.inputs)) {
                         if (key === 'name' || key.match(/^p\d+_[cvlk]$/)) continue;
                         const valDisplay = fmtWithCommas(value);
+                        const extraAttrs = key === 'inv' ? 'readonly style="background-color: #f1f5f9; cursor: not-allowed;"' : '';
                         inputsHTML += `
                             <div class="form-group">
                                 <label class="form-label">${LABELS[key] || key}</label>
                                 <input type="text" id="input-${model.id}-${key}" class="form-input" value="${valDisplay}"
-                                    oninput="updateInput(${model.id}, '${key}', this.value)">
+                                    oninput="updateInput(${model.id}, '${key}', this.value)" ${extraAttrs}>
                             </div>
                         `;
                     }
@@ -890,11 +892,12 @@
                     for (const [key, value] of Object.entries(model.inputs)) {
                         if (key === 'name') continue;
                         const valDisplay = fmtWithCommas(value);
+                        const extraAttrs = key === 'inv' ? 'readonly style="background-color: #f1f5f9; cursor: not-allowed;"' : '';
                         inputsHTML += `
                             <div class="form-group">
                                 <label class="form-label">${LABELS[key] || key}</label>
                                 <input type="text" id="input-${model.id}-${key}" class="form-input" value="${valDisplay}"
-                                    oninput="updateInput(${model.id}, '${key}', this.value)">
+                                    oninput="updateInput(${model.id}, '${key}', this.value)" ${extraAttrs}>
                             </div>
                         `;
                     }
