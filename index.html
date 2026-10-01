@@ -1216,7 +1216,11 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(headerLogo, 0, 0);
                     const logoDataUrl = canvas.toDataURL('image/png');
-                    doc.addImage(logoDataUrl, 'PNG', 15, 5, 38, 20);
+                    // Mantener la proporción del logo dentro de un espacio de 38x20 mm
+                    const logoRatio = canvas.width / canvas.height;
+                    const logoH = Math.min(20, 38 / logoRatio);
+                    const logoW = logoH * logoRatio;
+                    doc.addImage(logoDataUrl, 'PNG', 15, 5, logoW, logoH, undefined, 'FAST');
                 } else {
                     throw new Error('No logo found');
                 }
@@ -1324,15 +1328,17 @@
             doc.setFontSize(10);
             doc.text('TIEMPO DE RECUPERACIÓN (MESES)', 110, y);
 
+            // Las gráficas se dibujan aparte con el tamaño exacto del PDF y en alta resolución,
+            // para que no se estiren ni se vean borrosas sin importar el tamaño de la pantalla
+            const activeColors = results.map((r, i) => COLORS[i]);
+
             // Cash Flow Chart (left side)
-            const cashFlowCanvas = document.getElementById('cashFlowChart');
-            const cashFlowImg = cashFlowCanvas.toDataURL('image/png');
-            doc.addImage(cashFlowImg, 'PNG', 15, y + 8, 90, 55);
+            const cashFlowImg = renderChartForPDF(cashFlowChart, 90, 55, activeColors);
+            doc.addImage(cashFlowImg, 'PNG', 15, y + 8, 90, 55, undefined, 'FAST');
 
             // Payback Chart (right side)
-            const roiCanvas = document.getElementById('paybackChart');
-            const roiImg = roiCanvas.toDataURL('image/png');
-            doc.addImage(roiImg, 'PNG', 110, y + 8, 85, 50);
+            const roiImg = renderChartForPDF(paybackChart, 85, 50, activeColors);
+            doc.addImage(roiImg, 'PNG', 110, y + 8, 85, 50, undefined, 'FAST');
 
             // Footer disclaimer
             y += 70;
@@ -1346,6 +1352,48 @@
             doc.text('Generado con Calculadora ROI AG24/7', 105, y + 10, { align: 'center' });
 
             doc.save('reporte-roi-agranel.pdf');
+        }
+
+        // Dibuja una copia de la gráfica en un canvas oculto con la proporción del espacio en el PDF
+        // (5 px por mm, a 4x de resolución). Las gráficas de la pantalla no se modifican.
+        function renderChartForPDF(chart, widthMM, heightMM, activeColors) {
+            const PX_PER_MM = 5, SCALE = 4;
+            const holder = document.createElement('div');
+            holder.style.cssText = `position:fixed; left:-10000px; top:0; width:${widthMM * PX_PER_MM}px; height:${heightMM * PX_PER_MM}px;`;
+            const canvas = document.createElement('canvas');
+            canvas.width = widthMM * PX_PER_MM;
+            canvas.height = heightMM * PX_PER_MM;
+            holder.appendChild(canvas);
+            document.body.appendChild(holder);
+
+            // Los degradados de las barras pertenecen al canvas de la pantalla; se recrean para el nuevo tamaño
+            const gradientFill = (context) => {
+                const { ctx, chartArea } = context.chart;
+                if (!chartArea) return activeColors[0];
+                const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                if (activeColors.length > 1) {
+                    const step = 1 / (activeColors.length - 1);
+                    activeColors.forEach((color, i) => g.addColorStop(i * step, color));
+                } else {
+                    g.addColorStop(0, activeColors[0]);
+                    g.addColorStop(1, activeColors[0]);
+                }
+                return g;
+            };
+            const datasets = chart.data.datasets.map(d => ({
+                ...d,
+                backgroundColor: (typeof CanvasGradient !== 'undefined' && d.backgroundColor instanceof CanvasGradient) ? gradientFill : d.backgroundColor
+            }));
+
+            const tempChart = new Chart(canvas.getContext('2d'), {
+                type: chart.config.type,
+                data: { labels: [...chart.data.labels], datasets },
+                options: { ...chart.config.options, responsive: false, maintainAspectRatio: false, animation: false, devicePixelRatio: SCALE }
+            });
+            const dataUrl = canvas.toDataURL('image/png');
+            tempChart.destroy();
+            holder.remove();
+            return dataUrl;
         }
 
         function hexToRgb(hex) {
