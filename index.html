@@ -612,7 +612,6 @@
         const MACHINES = {
             // VENDINGS
             vending_hielo: { name: "Hielo", inv: 253000, price_ice: 25, loads_m: 25, luz: 3750, agua: 198.75, mnt: 198.75, renta: 0 },
-            vending_agua: { name: "Agua", inv: 119000, price_gar: 15, gar_m: 50, luz: 1500, agua: 1500, mnt: 1500, renta: 0 },
             
             // Vending Croquetas/Café (Máximo 4 Productos)
             vending_croquetas: { 
@@ -643,7 +642,7 @@
             
             // Ventana Limpieza 12 Productos
             v_limpieza_12: { 
-                name: "V. Limpieza (12 Prod)", inv: 88000, days: 30, 
+                name: "V. Limpieza (12 Prod)", inv: 98000, days: 30, 
                 p1_c: 8, p1_v: 20, p1_l: 20,
                 p2_c: 7, p2_v: 16, p2_l: 20,
                 p3_c: 9, p3_v: 20, p3_l: 20,
@@ -674,7 +673,7 @@
         };
 
         const CATEGORIES = {
-            "Vendings": ["vending_hielo", "vending_agua", "vending_croquetas"],
+            "Vendings": ["vending_hielo", "vending_croquetas"],
             "Ventanas/Kioskos": ["kiosko_agua", "kiosko_duo", "centro_llenado_duo", "v_limpieza_6", "v_limpieza_12", "v_croquetas", "v_hielo", "v_duo"]
         };
 
@@ -715,7 +714,7 @@
             if (machineId === 'kiosko_duo' || machineId === 'centro_llenado_duo' || machineId === 'v_duo') {
                 sales = (x.price_ice * x.loads_m * 30) + (x.price_gar * x.gar_m * 30);
                 costs = x.luz + x.agua + x.mnt + x.renta;
-            } else if (machineId === 'kiosko_agua' || machineId === 'vending_agua') {
+            } else if (machineId === 'kiosko_agua') {
                 sales = x.price_gar * x.gar_m * 30;
                 costs = x.luz + x.agua + x.mnt + x.renta;
             } else if (machineId === 'vending_hielo' || machineId === 'v_hielo') {
@@ -803,7 +802,7 @@
                     model.inputs.mnt = model.inputs.loads_m * 30 * 0.265;
                     recalculado = true;
                 } 
-                else if ((model.machineId === 'vending_agua' || model.machineId === 'kiosko_agua') && model.inputs.luz !== undefined) {
+                else if (model.machineId === 'kiosko_agua' && model.inputs.luz !== undefined) {
                     model.inputs.luz = model.inputs.gar_m * 30 * 1.00;
                     model.inputs.agua = model.inputs.gar_m * 30 * 1.00;
                     model.inputs.mnt = model.inputs.gar_m * 30 * 1.00;
