@@ -475,6 +475,54 @@
             position: relative;
             color: #ffffff;
         }
+        /* Nota de ayuda del panel de Modelos y aviso de proyecciones */
+        .models-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.65rem 0.85rem;
+            background: rgba(37, 99, 235, 0.08);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            color: var(--text-secondary);
+        }
+        .models-hint svg { flex-shrink: 0; margin-top: 0.1rem; color: var(--primary); }
+        /* En monitores anchos la nota se coloca a la izquierda del panel de Modelos, señalándolo */
+        @media (min-width: 1880px) {
+            .models-panel { position: relative; }
+            .models-hint {
+                position: absolute;
+                top: 1.25rem;
+                right: calc(100% + 1.5rem);
+                width: 220px;
+                margin-bottom: 0;
+                border-left: none;
+                border-right: 3px solid var(--primary);
+                text-align: right;
+                flex-direction: row-reverse;
+            }
+            .models-hint::after {
+                content: '';
+                position: absolute;
+                top: 0.9rem;
+                right: -0.6rem;
+                border: 0.45rem solid transparent;
+                border-left-color: var(--primary);
+            }
+        }
+        .calc-disclaimer {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            line-height: 1.5;
+            text-align: center;
+            color: #94a3b8;
+        }
+        .calc-disclaimer span { display: block; margin-top: 0.4rem; font-weight: 600; }
         /* Ajustes responsivos: evitar desplazamiento horizontal en celulares */
         html, body { max-width: 100%; overflow-x: hidden; }
         .header::before { width: min(600px, 100%); }
@@ -500,6 +548,13 @@
 
         <div class="main-grid">
             <div class="models-panel">
+                <p class="models-hint">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span>Edita los campos de acuerdo a tu caso y calcula la rentabilidad de tu negocio.</span>
+                </p>
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
@@ -512,7 +567,7 @@
                         </div>
                         <button class="btn-reset" onclick="resetAll()">Reiniciar</button>
                     </div>
-                    
+
                     <div id="models-container"></div>
                     
                     <button id="btn-add" class="btn btn-add" onclick="addModel()">
@@ -540,6 +595,11 @@
                             PDF
                         </button>
                     </div>
+
+                    <p class="calc-disclaimer">
+                        Este documento muestra proyecciones financieras estimadas. Los resultados reales pueden variar según condiciones de mercado y operación.
+                        <span>Generado con Calculadora ROI AG24/7</span>
+                    </p>
                 </div>
             </div>
 
